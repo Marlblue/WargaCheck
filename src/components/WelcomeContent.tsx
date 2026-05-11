@@ -50,6 +50,41 @@ const steps = [
   { num: '03', title: 'Siap berangkat', desc: 'centang berkas, datang ke kantor lengkap' },
 ];
 
+const officialLinks = [
+  {
+    label: 'Dukcapil Kemendagri',
+    desc: 'Portal resmi Direktorat Jenderal Kependudukan dan Pencatatan Sipil',
+    url: 'https://www.dukcapil.kemendagri.go.id/',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 21h18" /><path d="M5 21V7l7-4 7 4v14" /><path d="M9 21v-6h6v6" />
+        <path d="M9 10h1" /><path d="M14 10h1" /><path d="M9 14h1" /><path d="M14 14h1" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Layanan Online',
+    desc: 'Akses layanan dokumen kependudukan secara online tanpa antre',
+    url: 'https://layanandukcapil.kemendagri.go.id/',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" /><path d="M2 12h20" />
+        <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'SAPA Dukcapil',
+    desc: 'Layanan pengaduan dan konsultasi informasi kependudukan',
+    url: 'https://sapa.dukcapil.kemendagri.go.id/',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+      </svg>
+    ),
+  },
+];
+
 export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: WelcomeContentProps) {
   return (
     <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -58,7 +93,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
       <section style={{
         maxWidth: 680,
         margin: '0 auto',
-        padding: '56px 24px 40px',
+        padding: '48px 24px 40px',
       }}>
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -70,7 +105,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             display: 'inline-flex', alignItems: 'center', gap: 8,
             background: '#FFF0F0', color: '#CC0000',
             fontSize: 12, fontWeight: 600, padding: '5px 14px',
-            borderRadius: 20, marginBottom: 28, letterSpacing: '0.02em',
+            borderRadius: 20, marginBottom: 24, letterSpacing: '0.02em',
           }}>
             <svg width="14" height="10" viewBox="0 0 28 20" fill="none">
               <rect width="28" height="10" rx="2" fill="#CC0000"/>
@@ -79,16 +114,45 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             Asisten Dokumen Kependudukan
           </div>
 
-          {/* Slider */}
-          <div style={{ marginBottom: 28 }}>
+          {/* Headline */}
+          <h1 style={{
+            fontSize: 'clamp(24px, 5vw, 32px)',
+            fontWeight: 800,
+            color: '#111',
+            letterSpacing: '-0.035em',
+            lineHeight: 1.15,
+            margin: '0 0 10px',
+          }}>
+            Tahu dokumen apa saja yang perlu dibawa,{' '}
+            <span style={{ color: '#CC0000' }}>sebelum berangkat.</span>
+          </h1>
+
+          {/* Subtitle */}
+          <p style={{
+            fontSize: 'clamp(14px, 2.5vw, 16px)',
+            color: '#6B6B6B',
+            margin: '0 0 28px',
+            lineHeight: 1.6,
+            fontWeight: 400,
+          }}>
+            WargaCheck bantu kamu siap lengkap — biar gak perlu bolak-balik.
+          </p>
+
+          {/* Image Carousel */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.45 }}
+            style={{ marginBottom: 28 }}
+          >
             <HeroSlider />
-          </div>
+          </motion.div>
 
           {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.35 }}
+            transition={{ delay: 0.5, duration: 0.35 }}
             style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}
           >
             <button
@@ -96,10 +160,10 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
               style={{
                 fontSize: 15, fontWeight: 600, color: '#fff',
                 background: '#CC0000',
-                border: 'none', borderRadius: 8,
-                padding: '12px 24px', cursor: 'pointer',
+                border: 'none', borderRadius: 10,
+                padding: '13px 26px', cursor: 'pointer',
                 letterSpacing: '-0.01em',
-                transition: 'background 0.15s',
+                transition: 'background 0.15s, transform 0.1s',
                 display: 'flex', alignItems: 'center', gap: 8,
               }}
               onMouseEnter={e => e.currentTarget.style.background = '#A30000'}
@@ -115,8 +179,8 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
               style={{
                 fontSize: 15, fontWeight: 600, color: '#CC0000',
                 background: 'none',
-                border: '1.5px solid #CC0000', borderRadius: 8,
-                padding: '12px 24px', cursor: 'pointer',
+                border: '1.5px solid #CC0000', borderRadius: 10,
+                padding: '13px 26px', cursor: 'pointer',
                 letterSpacing: '-0.01em',
                 transition: 'all 0.15s',
                 display: 'flex', alignItems: 'center', gap: 8,
@@ -135,7 +199,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.95, duration: 0.35 }}
+            transition={{ delay: 0.7, duration: 0.35 }}
             style={{
               fontSize: 13, color: '#999', fontWeight: 400,
               margin: 0, lineHeight: 1.5,
@@ -231,37 +295,47 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
       {/* ── Official links ── */}
       <section style={{
         borderTop: '1px solid #E8E8E8',
-        padding: '24px 24px 48px',
+        padding: '32px 24px 48px',
         maxWidth: 680,
         margin: '0 auto',
       }}>
-        <p style={{ fontSize: 11, color: '#999', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 16, textAlign: 'center' }}>
-          Tautan resmi
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-          {[
-            { label: 'Dukcapil Kemendagri', url: 'https://www.dukcapil.kemendagri.go.id/' },
-            { label: 'Layanan Online Dukcapil', url: 'https://layanandukcapil.kemendagri.go.id/' },
-            { label: 'SAPA Dukcapil', url: 'https://sapa.dukcapil.kemendagri.go.id/' },
-          ].map(link => (
-            <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer"
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <div style={{ flex: 1, height: 1, background: '#E8E8E8' }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: '#999', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Tautan resmi</span>
+          <div style={{ flex: 1, height: 1, background: '#E8E8E8' }} />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {officialLinks.map((link, i) => (
+            <motion.a
+              key={link.url}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0, transition: { delay: 0.1 + i * 0.08, duration: 0.3 } }}
+              whileHover={{ x: 3, transition: { duration: 0.12 } }}
               style={{
-                fontSize: 12, fontWeight: 500, color: '#6B6B6B',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
+                padding: '16px 0',
+                background: 'none',
+                borderBottom: '1px solid #E8E8E8',
+                cursor: 'pointer',
                 textDecoration: 'none',
-                padding: '6px 14px',
-                border: '1px solid #E8E8E8',
-                borderRadius: 6,
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                transition: 'border-color 0.15s, color 0.15s',
+                gap: 16,
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#CC0000'; e.currentTarget.style.color = '#CC0000'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E8E8'; e.currentTarget.style.color = '#6B6B6B'; }}
             >
-              {link.label}
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: '#111', letterSpacing: '-0.01em' }}>{link.label}</div>
+                <div style={{ fontSize: 13, color: '#6B6B6B', marginTop: 2, fontWeight: 400 }}>{link.desc}</div>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, color: '#CC0000' }}>
+                <path d="M4 10L10 4M10 4H5.5M10 4v4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-            </a>
+            </motion.a>
           ))}
         </div>
       </section>

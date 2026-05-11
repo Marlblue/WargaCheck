@@ -91,6 +91,48 @@
 .dot-2 { animation: dotPulse 1.2s ease-in-out 0.2s infinite; }
 .dot-3 { animation: dotPulse 1.2s ease-in-out 0.4s infinite; }
 
+/* ── Official links grid ── */
+.official-links-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.official-link-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  background: #fff;
+  border: 1px solid #E8E8E8;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.official-link-card:hover {
+  border-color: #CC0000;
+  box-shadow: 0 4px 16px rgba(204, 0, 0, 0.06);
+}
+
+@media (max-width: 560px) {
+  .official-links-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .official-link-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .official-link-card > div:first-child {
+    margin-bottom: 0 !important;
+  }
+}
+
 /* ── Responsive ── */
 @media (max-width: 480px) {
   .berkas-result ul li {
