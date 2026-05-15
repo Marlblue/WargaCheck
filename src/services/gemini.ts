@@ -6,11 +6,8 @@
  * The Gemini API key is NEVER exposed to the browser.
  */
 
-const REQUEST_TIMEOUT_MS = 35_000; // slightly longer than server timeout
+const REQUEST_TIMEOUT_MS = 35_000;
 
-/**
- * Create a fetch request with a timeout.
- */
 async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = REQUEST_TIMEOUT_MS): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -26,9 +23,6 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = R
   }
 }
 
-/**
- * Parse error response and throw with a user-friendly message.
- */
 async function handleErrorResponse(res: Response): Promise<never> {
   const err = await res.json().catch(() => ({}));
 
@@ -89,6 +83,33 @@ export async function checkBerkas(
   } catch (err: unknown) {
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw new Error('Koneksi timeout. Periksa internet kamu dan coba lagi.');
+    }
+    throw new Error('Gagal terhubung ke server. Periksa internet kamu.');
+  }
+
+  if (!res.ok) {
+    await handleErrorResponse(res);
+  }
+
+  const data = await res.json();
+  return data.text || '';
+}
+
+export async function scanDocument(
+  imageBase64: string,
+  mimeType: string = 'image/jpeg',
+): Promise<string> {
+  let res: Response;
+
+  try {
+    res = await fetchWithTimeout('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: imageBase64, mimeType }),
+    }, 50_000); // longer timeout for vision
+  } catch (err: unknown) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('Analisis timeout. Coba foto yang lebih kecil atau lebih jelas.');
     }
     throw new Error('Gagal terhubung ke server. Periksa internet kamu.');
   }

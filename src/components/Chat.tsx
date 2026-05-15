@@ -8,12 +8,14 @@ import remarkGfm from 'remark-gfm';
 import { motion, AnimatePresence } from 'motion/react';
 import { sendMessage } from '../services/gemini';
 import FlagIcon from './shared/FlagIcon';
+import DocumentScanner from './DocumentScanner';
 
 interface Message {
   id: string;
   role: 'user' | 'model';
   text: string;
   timestamp: string;
+  suggestions?: string[];
 }
 
 interface ChatProps {
@@ -41,6 +43,9 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
   });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [streamingText, setStreamingText] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const didInit = useRef(false);
@@ -63,27 +68,79 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
+  }, [messages, isLoading, streamingText]);
 
   const handleSend = useCallback(async (textToSend: string) => {
     const text = textToSend.trim();
     if (!text || isLoading) return;
 
     const userMsg: Message = { id: Date.now().toString(), role: 'user', text, timestamp: new Date().toISOString() };
+    
+    // Add user message immediately
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
+    setIsStreaming(false); // Ensure we show typing indicator (dots) first
+    setStreamingText('');
+
+    // Force scroll to bottom after user message is added
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }, 10);
 
     try {
-      const history = messages.map(m => ({ role: m.role, parts: [{ text: m.text }] }));
+      // Build history from prior messages only (not including current message)
+      // Server adds the current message separately from the 'message' field
+      const history = messages.map(m => ({ 
+        role: m.role, 
+        parts: [{ text: m.text }] 
+      }));
+      
       const response = await sendMessage(text, history);
+      const fullText = response || 'Maaf, saya sedang mengalami kendala. Bisa diulangi?';
+      
+      // Stop "loading" (dots) and start "streaming" (typing text)
+      setIsLoading(false);
+      setIsStreaming(true);
+      
+      // Streaming effect - type out character by character
+      // We use word-based streaming for natural feel
+      const words = fullText.split(' ');
+      let currentText = '';
+      
+      for (let i = 0; i < words.length; i++) {
+        currentText += (i > 0 ? ' ' : '') + words[i];
+        setStreamingText(currentText);
+        
+        // Dynamic delay based on word length for more natural feel
+        const delay = Math.min(60, 20 + words[i].length * 2);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        // Auto-scroll during streaming
+        if (scrollRef.current) {
+          const isAtBottom = scrollRef.current.scrollHeight - scrollRef.current.scrollTop <= scrollRef.current.clientHeight + 100;
+          if (isAtBottom) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+          }
+        }
+      }
+      
+      // Generate smart suggestions based on response
+      const suggestions = generateSuggestions(fullText, text);
+      
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
-        text: response || 'Maaf, saya sedang mengalami kendala. Bisa diulangi?',
+        text: fullText,
         timestamp: new Date().toISOString(),
+        suggestions,
       };
+      
       setMessages(prev => [...prev, botMsg]);
+      setStreamingText('');
+      setIsStreaming(false);
     } catch (err: unknown) {
       const errorText = err instanceof Error ? err.message : 'Sepertinya ada masalah koneksi. Coba lagi sebentar.';
       const errMsg: Message = {
@@ -93,11 +150,45 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
         timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, errMsg]);
-    } finally {
+      setStreamingText('');
+      setIsStreaming(false);
       setIsLoading(false);
+    } finally {
       inputRef.current?.focus();
     }
   }, [messages, isLoading]);
+
+  // Generate smart follow-up suggestions
+  const generateSuggestions = (response: string, userQuestion: string): string[] => {
+    const suggestions: string[] = [];
+    
+    // Check what's in the response to generate relevant suggestions
+    if (response.toLowerCase().includes('biaya') || response.toLowerCase().includes('gratis')) {
+      suggestions.push('Berapa lama prosesnya?');
+    } else {
+      suggestions.push('Berapa biayanya?');
+    }
+    
+    if (response.toLowerCase().includes('hari') || response.toLowerCase().includes('minggu')) {
+      suggestions.push('Bisa dipercepat?');
+    } else {
+      suggestions.push('Berapa lama prosesnya?');
+    }
+    
+    if (response.toLowerCase().includes('dokumen') || response.toLowerCase().includes('berkas')) {
+      suggestions.push('Buatkan checklist lengkapnya');
+    } else {
+      suggestions.push('Dokumen apa saja yang perlu disiapkan?');
+    }
+    
+    // Always add a generic helpful suggestion
+    if (!response.toLowerCase().includes('online')) {
+      suggestions.push('Bisa diurus online?');
+    }
+    
+    // Return max 3 unique suggestions
+    return [...new Set(suggestions)].slice(0, 3);
+  };
 
   const handleSendRef = useRef(handleSend);
   handleSendRef.current = handleSend;
@@ -129,26 +220,33 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
       flex: 1, display: 'flex', flexDirection: 'column',
       maxWidth: 720, width: '100%', margin: '0 auto',
       height: 'calc(100dvh - 52px)',
+      background: '#fff',
+      position: 'relative',
     }}>
 
       {/* ── Chat Header ── */}
       {hasHistory && (
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '10px 20px',
+          padding: 'clamp(10px, 2.2vw, 12px) clamp(16px, 4vw, 20px)',
           borderBottom: '1px solid #F0F0F0',
+          background: '#FAFAFA',
         }}>
-          <span style={{ fontSize: 12, fontWeight: 500, color: '#999', letterSpacing: '-0.01em' }}>
-            {messages.length} pesan
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#CC0000', opacity: 0.6 }} />
+            <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', fontWeight: 600, color: '#6B6B6B', letterSpacing: '-0.01em' }}>
+              {messages.length} pesan
+            </span>
+          </div>
           <button
             onClick={clearHistory}
             style={{
-              fontSize: 12, fontWeight: 500, color: '#999',
-              background: 'none', border: '1px solid #E8E8E8',
-              borderRadius: 6, padding: '4px 12px', cursor: 'pointer',
+              fontSize: 'clamp(11px, 2.5vw, 12px)', fontWeight: 500, color: '#999',
+              background: '#fff', border: '1px solid #E8E8E8',
+              borderRadius: 6, padding: 'clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 12px)', cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 5,
               transition: 'all 0.15s',
+              minHeight: 32,
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#CC0000'; e.currentTarget.style.color = '#CC0000'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E8E8'; e.currentTarget.style.color = '#999'; }}
@@ -162,43 +260,74 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
       )}
 
       {/* ── Messages ── */}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '24px 20px 8px' }}>
+      <div 
+        ref={scrollRef} 
+        style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          padding: 'clamp(16px, 4vw, 24px) clamp(16px, 4vw, 20px) clamp(8px, 2vw, 12px)',
+          background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
 
         {/* Empty state */}
         {showQuickReplies && (
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            style={{ paddingBottom: 32 }}
+            style={{ paddingBottom: 'clamp(24px, 5vw, 32px)' }}
           >
-            <div style={{ marginBottom: 24 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#111', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
-                Ada yang bisa dibantu?
+            {/* Hero empty state */}
+            <div style={{
+              textAlign: 'center', padding: 'clamp(28px, 6vw, 40px) clamp(16px, 4vw, 24px)',
+              marginBottom: 'clamp(20px, 4vw, 28px)',
+              background: 'linear-gradient(135deg, #FFF0F0 0%, #fff 60%, #F7F7F7 100%)',
+              borderRadius: 16, border: '1px solid #F0F0F0',
+            }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 14, background: '#CC0000',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto clamp(14px, 3vw, 18px)', boxShadow: '0 4px 16px rgba(204,0,0,0.2)',
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                </svg>
+              </div>
+              <h3 style={{ fontSize: 'clamp(18px, 4.2vw, 22px)', fontWeight: 700, color: '#111', margin: '0 0 clamp(6px, 1.5vw, 8px)', letterSpacing: '-0.03em' }}>
+                Hai, ada yang bisa dibantu?
               </h3>
-              <p style={{ fontSize: 14, color: '#888', margin: 0, lineHeight: 1.5 }}>
-                Tanya prosedur, syarat, atau checklist berkas apa saja.
+              <p style={{ fontSize: 'clamp(13px, 3vw, 14px)', color: '#6B6B6B', margin: 0, lineHeight: 1.6, maxWidth: 340, marginLeft: 'auto', marginRight: 'auto' }}>
+                Tanya prosedur, syarat, atau checklist berkas dokumen kependudukan apa saja.
               </p>
             </div>
 
-            <p style={{ fontSize: 11, color: '#bbb', marginBottom: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Pertanyaan populer
+            <p style={{ fontSize: 'clamp(10px, 2.2vw, 11px)', color: '#CC0000', marginBottom: 'clamp(10px, 2vw, 12px)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Pertanyaan Populer
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {QUICK_REPLIES.map(q => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid #F0F0F0', borderRadius: 12, overflow: 'hidden' }}>
+              {QUICK_REPLIES.map((q, i) => (
                 <button key={q} onClick={() => handleSend(q)} style={{
-                  fontSize: 14, fontWeight: 400,
-                  padding: '11px 0',
-                  background: 'none', border: 'none',
-                  borderBottom: '1px solid #F0F0F0',
+                  fontSize: 'clamp(13px, 3vw, 14px)', fontWeight: 500,
+                  padding: 'clamp(13px, 2.8vw, 15px) clamp(14px, 3vw, 16px)',
+                  background: '#fff', border: 'none',
+                  borderBottom: i < QUICK_REPLIES.length - 1 ? '1px solid #F0F0F0' : 'none',
                   color: '#333', cursor: 'pointer',
                   textAlign: 'left',
-                  transition: 'color 0.12s',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  transition: 'all 0.15s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                  minHeight: 48,
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.color = '#CC0000'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = '#333'; }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#CC0000'; e.currentTarget.style.background = '#FFF8F8'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#333'; e.currentTarget.style.background = '#fff'; }}
                 >
-                  {q}
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, color: 'inherit', opacity: 0.5 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 'clamp(10px, 2vw, 11px)', fontWeight: 700, color: '#CC0000', opacity: 0.4, fontVariantNumeric: 'tabular-nums' }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    {q}
+                  </span>
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, color: 'inherit', opacity: 0.4 }}>
                     <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
@@ -218,21 +347,21 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
                 style={{
                   display: 'flex',
                   justifyContent: isUser ? 'flex-end' : 'flex-start',
-                  marginBottom: 16,
+                  marginBottom: 'clamp(14px, 3vw, 16px)',
                 }}
               >
                 {/* AI avatar */}
                 {!isUser && (
-                  <div style={{ width: 28, flexShrink: 0, marginRight: 10, paddingTop: 18, display: 'flex', justifyContent: 'center' }}>
-                    <FlagIcon />
+                  <div style={{ width: 'clamp(24px, 5vw, 28px)', flexShrink: 0, marginRight: 'clamp(8px, 2vw, 10px)', paddingTop: 'clamp(16px, 3.5vw, 18px)', display: 'flex', justifyContent: 'center' }}>
+                    <FlagIcon width={22} />
                   </div>
                 )}
 
-                <div style={{ maxWidth: '78%' }}>
+                <div style={{ maxWidth: isUser ? '85%' : '80%' }}>
                   {/* Role label */}
                   <div style={{
-                    fontSize: 11, fontWeight: 600, color: '#999',
-                    marginBottom: 4,
+                    fontSize: 'clamp(10px, 2.2vw, 11px)', fontWeight: 600, color: '#999',
+                    marginBottom: 'clamp(3px, 1vw, 4px)',
                     textAlign: isUser ? 'right' : 'left',
                     textTransform: 'uppercase', letterSpacing: '0.06em',
                   }}>
@@ -241,13 +370,15 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
 
                   {/* Bubble */}
                   <div style={{
-                    padding: isUser ? '10px 14px' : '14px 16px',
-                    borderRadius: isUser ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
-                    background: isUser ? '#CC0000' : '#F7F7F7',
+                    padding: isUser ? 'clamp(10px, 2.2vw, 12px) clamp(12px, 2.8vw, 14px)' : 'clamp(12px, 2.8vw, 14px) clamp(14px, 3.2vw, 16px)',
+                    borderRadius: isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
+                    background: isUser ? 'linear-gradient(135deg, #CC0000 0%, #A30000 100%)' : '#fff',
                     color: isUser ? '#fff' : '#111',
-                    fontSize: 14,
+                    fontSize: 'clamp(13px, 3vw, 14.5px)',
                     lineHeight: 1.65,
                     wordBreak: 'break-word',
+                    boxShadow: isUser ? '0 2px 8px rgba(204, 0, 0, 0.15)' : '0 2px 6px rgba(0,0,0,0.04)',
+                    border: isUser ? 'none' : '1px solid #F0F0F0',
                   }}>
                     {isUser ? (
                       <span>{msg.text}</span>
@@ -257,13 +388,65 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
                       </div>
                     )}
                   </div>
+
+                  {/* Smart suggestion chips */}
+                  {!isUser && msg.suggestions && msg.suggestions.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3, duration: 0.3 }}
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 'clamp(6px, 1.5vw, 8px)',
+                        marginTop: 'clamp(8px, 2vw, 10px)',
+                      }}
+                    >
+                      {msg.suggestions.map((suggestion, idx) => (
+                        <motion.button
+                          key={idx}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleSend(suggestion)}
+                          disabled={isLoading}
+                          style={{
+                            fontSize: 'clamp(11px, 2.5vw, 12px)',
+                            fontWeight: 500,
+                            color: '#CC0000',
+                            background: '#fff',
+                            border: '1px solid #CC0000',
+                            borderRadius: 9999,
+                            padding: 'clamp(7px, 1.8vw, 8px) clamp(11px, 2.5vw, 12px)',
+                            cursor: isLoading ? 'default' : 'pointer',
+                            transition: 'all 0.15s',
+                            opacity: isLoading ? 0.5 : 1,
+                            minHeight: 32,
+                          }}
+                          onMouseEnter={e => {
+                            if (!isLoading) {
+                              e.currentTarget.style.background = '#CC0000';
+                              e.currentTarget.style.color = '#fff';
+                            }
+                          }}
+                          onMouseLeave={e => {
+                            if (!isLoading) {
+                              e.currentTarget.style.background = '#fff';
+                              e.currentTarget.style.color = '#CC0000';
+                            }
+                          }}
+                        >
+                          {suggestion}
+                        </motion.button>
+                      ))}
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             );
           })}
 
           {/* Typing indicator */}
-          {isLoading && (
+          {isLoading && !isStreaming && (
             <motion.div key="loading"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, gap: 10 }}
@@ -286,18 +469,84 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
               </div>
             </motion.div>
           )}
+
+          {/* Streaming response */}
+          {isStreaming && streamingText && (
+            <motion.div key="streaming"
+              initial={{ opacity: 0, y: 6 }} 
+              animate={{ opacity: 1, y: 0 }}
+              style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, gap: 10 }}
+            >
+              <div style={{ width: 28, flexShrink: 0, paddingTop: 18, display: 'flex', justifyContent: 'center' }}>
+                <FlagIcon width={22} />
+              </div>
+              <div style={{ maxWidth: '80%' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#999', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  WargaCheck · sedang mengetik...
+                </div>
+                <div style={{
+                  padding: '14px 16px', borderRadius: '4px 16px 16px 16px',
+                  background: '#fff', color: '#111', fontSize: 'clamp(13.5px, 3vw, 14.5px)', lineHeight: 1.65,
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                  border: '1px solid #F0F0F0',
+                }}>
+                  <div className="md">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingText}</ReactMarkdown>
+                  </div>
+                  <span style={{
+                    display: 'inline-block',
+                    width: 2,
+                    height: 16,
+                    background: '#CC0000',
+                    marginLeft: 2,
+                    animation: 'blink 1s infinite',
+                    verticalAlign: 'middle',
+                  }} />
+                </div>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 
       {/* ── Input bar ── */}
       <div style={{
         borderTop: '1px solid #E8E8E8',
-        padding: '14px 20px',
+        padding: 'clamp(12px, 3vw, 14px) clamp(16px, 4vw, 20px)',
         background: '#fff',
         display: 'flex',
         alignItems: 'center',
-        gap: 10,
+        gap: 'clamp(8px, 2vw, 10px)',
       }}>
+        {/* Document Scanner Button */}
+        <button
+          onClick={() => setShowScanner(true)}
+          disabled={isLoading}
+          title="Scan dokumen dengan AI"
+          style={{
+            flexShrink: 0,
+            background: '#F7F7F7',
+            border: 'none',
+            borderRadius: 8,
+            padding: 'clamp(10px, 2.2vw, 12px)',
+            cursor: isLoading ? 'default' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background 0.15s',
+            opacity: isLoading ? 0.5 : 1,
+            minWidth: 44,
+            minHeight: 44,
+          }}
+          onMouseEnter={e => { if (!isLoading) e.currentTarget.style.background = '#E8E8E8'; }}
+          onMouseLeave={e => { if (!isLoading) e.currentTarget.style.background = '#F7F7F7'; }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CC0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </button>
+
         <input
           ref={inputRef}
           type="text"
@@ -307,11 +556,12 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           placeholder="Tanya prosedur, syarat, atau checklist berkas..."
           disabled={isLoading}
           style={{
-            flex: 1, fontSize: 14, fontFamily: 'Inter, sans-serif',
-            padding: '10px 14px',
+            flex: 1, fontSize: 'clamp(13px, 3vw, 14px)', fontFamily: 'Inter, sans-serif',
+            padding: 'clamp(11px, 2.5vw, 13px) clamp(12px, 2.8vw, 14px)',
             border: '1.5px solid #E8E8E8', borderRadius: 8,
             outline: 'none', background: '#fff', color: '#111',
             transition: 'border-color 0.15s',
+            minHeight: 44,
           }}
           onFocus={e => e.target.style.borderColor = '#CC0000'}
           onBlur={e => e.target.style.borderColor = '#E8E8E8'}
@@ -324,10 +574,12 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
             flexShrink: 0,
             background: input.trim() && !isLoading ? '#CC0000' : '#E8E8E8',
             border: 'none', borderRadius: 8,
-            padding: '10px 16px',
+            padding: 'clamp(10px, 2.2vw, 12px) clamp(14px, 3.2vw, 16px)',
             cursor: input.trim() && !isLoading ? 'pointer' : 'default',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'background 0.15s',
+            minWidth: 44,
+            minHeight: 44,
           }}
           onMouseEnter={e => { if (input.trim() && !isLoading) e.currentTarget.style.background = '#A30000'; }}
           onMouseLeave={e => { if (input.trim() && !isLoading) e.currentTarget.style.background = '#CC0000'; }}
@@ -339,9 +591,21 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
       </div>
 
       {/* Disclaimer */}
-      <p style={{ textAlign: 'center', fontSize: 11, color: '#ccc', padding: '6px 24px 14px', margin: 0 }}>
+      <p style={{ textAlign: 'center', fontSize: 'clamp(10px, 2.2vw, 11px)', color: '#ccc', padding: 'clamp(6px, 1.5vw, 8px) clamp(20px, 5vw, 24px) clamp(12px, 3vw, 14px)', margin: 0 }}>
         Informasi bersifat umum — konfirmasi ke instansi resmi setempat untuk kepastian.
       </p>
+
+      {/* Document Scanner Modal */}
+      <AnimatePresence>
+        {showScanner && (
+          <DocumentScanner
+            onClose={() => setShowScanner(false)}
+            onScanComplete={(result) => {
+              handleSend(`Saya sudah scan dokumen. Hasil scan:\n\n${result}\n\nTolong bantu saya lanjutkan prosesnya.`);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

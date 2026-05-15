@@ -1,201 +1,161 @@
 # 🇮🇩 WargaCheck — Asisten AI Dokumen Kependudukan Indonesia
 
-> **Tahu dokumen apa saja yang perlu dibawa, sebelum berangkat.**
+> **Tahu dokumen apa yang dibawa, sebelum berangkat.**
 
-WargaCheck adalah asisten berbasis AI yang membantu warga Indonesia mengurus dokumen administrasi kependudukan — mulai dari KTP, KK, Akta Lahir, SKCK, hingga Surat Pindah. Tidak perlu lagi bolak-balik ke kantor karena dokumen kurang.
+WargaCheck adalah asisten berbasis AI yang membantu warga Indonesia mempersiapkan dokumen administrasi kependudukan — mulai dari KTP, KK, Akta Lahir, SKCK, hingga Paspor. Tidak perlu lagi bolak-balik ke kantor karena berkas kurang.
 
-🔗 **Live Demo:** _Coming soon_
+---
+
+## 🎯 Masalah yang Diselesaikan
+
+Setiap tahun, **jutaan warga Indonesia** harus mengurus dokumen kependudukan di kantor Dukcapil, Kelurahan, atau Kepolisian. Masalah utama:
+
+- **Berkas tidak lengkap** → harus pulang dan datang lagi
+- **Prosedur tidak jelas** → informasi berbeda-beda di setiap sumber
+- **Waktu terbuang** → antrean panjang, hanya untuk ditolak karena kurang satu dokumen
+
+**WargaCheck menyelesaikan ini** dengan AI yang menganalisis situasi personal pengguna dan memberikan checklist berkas yang lengkap, estimasi waktu & biaya, serta panduan langkah demi langkah — sebelum pengguna berangkat ke kantor.
 
 ---
 
 ## ✨ Fitur Utama
 
-### 💬 Konsultasi AI
-Tanya prosedur, syarat, dan langkah-langkah pengurusan dokumen kependudukan dalam bahasa yang mudah dipahami. AI memberikan jawaban terstruktur lengkap dengan checklist dokumen, estimasi waktu, dan biaya.
+### 1. 💬 AI Konsultasi
+Chat langsung dengan AI yang memahami seluruh prosedur dokumen kependudukan Indonesia. Tanya apa saja tentang KTP, KK, Akta, SKCK, dan lainnya — jawaban terstruktur dengan checklist, estimasi biaya, dan panduan lengkap.
 
-### ✅ Cek Kelengkapan Berkas
-Pilih jenis dokumen dan situasi kamu, AI akan generate checklist personal yang bisa dicentang satu per satu. Lengkap dengan progress bar supaya kamu tahu berkas mana yang masih kurang.
+### 2. 📋 Smart Berkas Checker
+Pilih jenis dokumen, keperluan, status pernikahan, dan kewarganegaraan — AI buatkan checklist interaktif yang bisa dicentang satu per satu. Progress bar menunjukkan kesiapan berkas secara real-time.
 
-### 💾 Riwayat Chat
-Percakapan tersimpan otomatis di browser. Kamu bisa lanjutkan kapan saja tanpa kehilangan konteks.
+### 3. 📸 AI Document Scanner (Gemini Vision)
+Upload foto dokumen yang sudah dimiliki — AI menganalisis jenis dokumen, memeriksa keterbacaan, dan memberikan rekomendasi dokumen lain yang mungkin diperlukan. Powered by Google Gemini Vision.
 
----
-
-## 🖼️ Screenshot
-
-| Landing Page | Konsultasi AI | Cek Berkas |
-|:---:|:---:|:---:|
-| Hero dengan pain points | Chat terstruktur | Checklist interaktif |
+### 4. 🎯 Persona-Based Guidance
+Panduan yang disesuaikan untuk berbagai profil pengguna:
+- **Mahasiswa Rantau** — KTP, KK, surat pindah untuk kuliah di kota lain
+- **Pekerja Profesional** — SKCK, akta nikah, dokumen untuk melamar kerja
+- **Ibu Rumah Tangga** — Akta lahir anak, KK, dokumen keluarga
 
 ---
 
-## 🛠️ Tech Stack
+## 🏗️ Tech Stack
 
-| Layer | Teknologi |
+| Layer | Technology |
 |---|---|
-| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS v4 |
-| **Backend** | Express.js (API proxy) |
-| **AI** | Google Gemini 2.5 Flash |
-| **Animation** | Motion (Framer Motion) |
-| **Markdown** | react-markdown + remark-gfm |
-| **Security** | Helmet, CORS, rate limiting, input validation |
-| **Deploy** | Docker + Cloud Run ready |
+| Frontend | React 19 + TypeScript + Vite |
+| Styling | Tailwind CSS v4 + Inline Styles |
+| Animation | Framer Motion (motion/react) |
+| AI Model | Google Gemini 2.5 Flash |
+| AI Vision | Google Gemini 2.5 Flash (Multimodal) |
+| Backend | Express 4 + Node.js |
+| Deployment | Docker (multi-stage build) |
 
 ---
 
-## 🏗️ Arsitektur
+## 🔒 Arsitektur Keamanan
 
 ```
-Browser (React SPA)
-    │
-    ├── /api/chat          → Konsultasi AI
-    └── /api/check-berkas  → Cek Kelengkapan Berkas
-          │
-    Express.js (proxy server)
-          │
-    Google Gemini API
+┌──────────────┐     /api/chat        ┌──────────────┐     Gemini API
+│   Browser    │ ──────────────────▶  │  Express     │ ──────────────▶  Google AI
+│  (React App) │     /api/scan        │  Server      │
+│              │ ◀──────────────────  │  (Proxy)     │ ◀──────────────
+│  No API Key  │                      │  API Key     │
+└──────────────┘                      └──────────────┘
 ```
 
-**API key tidak pernah terekspos ke browser.** Semua panggilan ke Gemini melewati Express server yang menyimpan key secara server-side.
-
----
-
-## 🔒 Keamanan
-
-- ✅ API key server-side only (tidak pernah dikirim ke browser)
-- ✅ Helmet security headers
-- ✅ CORS protection (origin lock di production)
-- ✅ Rate limiting (20 req/menit per IP)
-- ✅ Input validation & sanitasi (maks 2000 karakter)
-- ✅ History validation (maks 20 pesan, role whitelist)
-- ✅ Request timeout 30 detik ke Gemini API
-- ✅ Prompt injection guardrails di system prompt
+- API key **never** reaches the browser — all AI calls proxied through Express
+- Per-endpoint rate limiting (chat: 20/min, berkas: 10/min, scan: 8/min)
+- Input validation & sanitization on all endpoints
+- Helmet.js security headers
+- CORS protection in production
+- Base64 image size validation (max 7MB)
 
 ---
 
 ## 🚀 Quick Start
 
-### Prasyarat
-
+### Prerequisites
 - Node.js 20+
-- [Google Gemini API Key](https://aistudio.google.com/apikey)
+- Google Gemini API Key ([Get one here](https://aistudio.google.com/apikey))
 
 ### Setup
 
 ```bash
-# 1. Clone repo
-git clone https://github.com/Marlblue/WargaCheck.git
-cd WargaCheck
+# Clone
+git clone https://github.com/your-username/wargacheck.git
+cd wargacheck
 
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Setup environment
+# Configure environment
 cp .env.example .env
-# Edit .env → isi GEMINI_API_KEY dengan key kamu
+# Edit .env and add your GEMINI_API_KEY
 
-# 4. Jalankan development server
-npm run dev:server   # Terminal 1: Express API (port 3001)
-npm run dev          # Terminal 2: Vite frontend (port 3000)
+# Start development (2 terminals)
+npm run dev:server   # Express API on :3001
+npm run dev          # Vite dev on :3000
 ```
 
-Buka **http://localhost:3000** di browser.
+Open [http://localhost:3000](http://localhost:3000)
 
-### Atau jalankan keduanya sekaligus:
-
-```bash
-npm run dev:all
-```
-
----
-
-## 🐳 Docker
+### Docker
 
 ```bash
-# Build image
 docker build -t wargacheck .
-
-# Run container
-docker run -p 8080:8080 \
-  -e GEMINI_API_KEY=your_key_here \
-  -e NODE_ENV=production \
-  wargacheck
+docker run -p 8080:8080 -e GEMINI_API_KEY=your_key wargacheck
 ```
 
 ---
 
-## ☁️ Deploy ke Cloud Run
-
-```bash
-gcloud run deploy wargacheck \
-  --source . \
-  --region asia-southeast2 \
-  --allow-unauthenticated \
-  --set-env-vars GEMINI_API_KEY=your_key_here
-```
-
-> ⚠️ Jangan commit `.env` ke Git. Set API key lewat `--set-env-vars` saat deploy.
-
----
-
-## 📁 Struktur Project
+## 📁 Project Structure
 
 ```
-WargaCheck/
+wargacheck/
+├── server.js                 # Express API server (proxy to Gemini)
+├── index.html                # HTML entry point
+├── vite.config.ts            # Vite + Tailwind + React config
+├── Dockerfile                # Multi-stage Docker build
 ├── src/
-│   ├── App.tsx                    # Routing welcome/chat/berkas
-│   ├── index.css                  # Design system (Inter, merah-putih)
-│   ├── main.tsx                   # Entry point + ErrorBoundary
-│   ├── components/
-│   │   ├── WelcomeContent.tsx     # Landing page + topic list
-│   │   ├── HeroSlider.tsx         # Rotating pain points hero
-│   │   ├── Chat.tsx               # Interface chat utama
-│   │   ├── BerkasChecker.tsx      # Mode cek berkas interaktif
-│   │   ├── ErrorBoundary.tsx      # Global error handler
-│   │   └── shared/
-│   │       └── FlagIcon.tsx       # Indonesian flag icon
+│   ├── main.tsx              # React entry point
+│   ├── App.tsx               # Main app with routing
+│   ├── index.css             # Design system & global styles
 │   ├── services/
-│   │   └── gemini.ts             # API client (fetch + timeout)
-│   └── lib/
-│       └── utils.ts              # Utility functions
-├── server.js                      # Express API proxy (Gemini)
-├── index.html                     # HTML entry + SEO meta tags
-├── Dockerfile                     # Production Docker image
-├── nginx.conf                     # Nginx config (optional)
-├── .env.example                   # Template environment variables
-├── vite.config.ts                 # Vite + Tailwind config
-└── tsconfig.json                  # TypeScript config
+│   │   └── gemini.ts         # API client (chat, berkas, scan)
+│   └── components/
+│       ├── WelcomeContent.tsx # Landing page
+│       ├── Chat.tsx           # AI chat interface
+│       ├── BerkasChecker.tsx  # Document checklist generator
+│       ├── DocumentScanner.tsx # AI document scanner (Vision)
+│       ├── ErrorBoundary.tsx  # Error handling
+│       └── shared/
+│           └── FlagIcon.tsx   # Indonesian flag icon
 ```
 
 ---
 
-## 📄 Environment Variables
+## 🎨 Design
 
-| Variable | Required | Default | Keterangan |
-|---|---|---|---|
-| `GEMINI_API_KEY` | ✅ | — | API key dari Google AI Studio |
-| `PORT` | ❌ | `3001` | Port Express server |
-| `NODE_ENV` | ❌ | — | Set `production` saat deploy |
-| `ALLOWED_ORIGINS` | ❌ | `localhost` | Comma-separated allowed CORS origins |
-
----
-
-## 🎯 Dibuat Untuk
-
-**#JuaraVibeCoding 2026** — Kompetisi vibe coding nasional oleh Google Developer Indonesia.
-
-**Problem:** 270 juta warga Indonesia punya dokumen kependudukan yang perlu diurus, tapi prosedurnya sering bikin bingung dan berakhir bolak-balik ke kantor.
-
-**Solution:** AI assistant yang kasih jawaban terstruktur + checklist personal yang bisa dicentang, supaya datang ke kantor langsung lengkap.
+- **Editorial landing page** — Dark, cinematic hero with parallax Unsplash photography
+- **Indonesian Red (#CC0000)** — Brand color matching the Indonesian flag
+- **Inter font** — Clean, modern typography
+- **Micro-animations** — Framer Motion for smooth transitions and reveals
+- **Mobile-first** — Responsive with `clamp()` values throughout
 
 ---
 
-## 📝 Lisensi
+## 📄 API Endpoints
 
-Apache-2.0 — Lihat [LICENSE](LICENSE) untuk detail.
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/health` | Health check |
+| `POST` | `/api/chat` | AI consultation chat |
+| `POST` | `/api/check-berkas` | Generate document checklist |
+| `POST` | `/api/scan` | Analyze document photo (Vision) |
 
 ---
 
-<p align="center">
-  <sub>Dibuat dengan ❤️ untuk warga Indonesia</sub>
-</p>
+## 🏆 #JuaraVibeCoding 2026
+
+Built with ❤️ for the JuaraVibeCoding 2026 competition.
+
+**WargaCheck** — Supaya tidak perlu bolak-balik ke kantor.

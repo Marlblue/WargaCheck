@@ -9,3 +9,10 @@ dist/
 .idea/
 *.swp
 *.swo
+
+# Lock files (we use npm)
+pnpm-lock.yaml
+yarn.lock
+
+# Unused configs
+nginx.conf

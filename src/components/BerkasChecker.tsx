@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import { useState, useRef, Children } from 'react';
+import { useState, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { motion, AnimatePresence } from 'motion/react';
@@ -132,7 +132,7 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
       maxWidth: 720, width: '100%', margin: '0 auto',
       height: 'calc(100dvh - 52px)',
     }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: 'clamp(16px, 4vw, 24px) clamp(16px, 4vw, 20px)' }}>
 
         <AnimatePresence mode="wait">
           {/* ── STEP 0: Form ── */}
@@ -145,25 +145,25 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
               transition={{ duration: 0.25 }}
             >
               {/* Header */}
-              <div style={{ marginBottom: 32 }}>
+              <div style={{ marginBottom: 'clamp(24px, 5vw, 32px)' }}>
                 <h2 style={{
-                  fontSize: 'clamp(22px, 4vw, 28px)', fontWeight: 700,
-                  color: '#111', letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 8px',
+                  fontSize: 'clamp(24px, 5.5vw, 28px)', fontWeight: 700,
+                  color: '#111', letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 clamp(8px, 2vw, 12px)',
                 }}>
                   Cek kelengkapan berkas<br />
                   <span style={{ color: '#CC0000' }}>sebelum ke kantor.</span>
                 </h2>
-                <p style={{ fontSize: 14, color: '#6B6B6B', margin: 0, lineHeight: 1.6 }}>
+                <p style={{ fontSize: 'clamp(13px, 3vw, 14px)', color: '#6B6B6B', margin: 0, lineHeight: 1.6 }}>
                   Pilih jenis dokumen dan situasi, AI buatkan checklist yang bisa kamu centang satu per satu.
                 </p>
               </div>
 
               {/* ── 1. Jenis Dokumen ── */}
-              <div style={{ marginBottom: 24 }}>
+              <div style={{ marginBottom: 'clamp(20px, 4vw, 24px)' }}>
                 <label style={{
-                  fontSize: 11, fontWeight: 600, color: '#999',
+                  fontSize: 'clamp(10px, 2.2vw, 11px)', fontWeight: 600, color: '#999',
                   textTransform: 'uppercase', letterSpacing: '0.08em',
-                  display: 'block', marginBottom: 8, paddingLeft: 2,
+                  display: 'block', marginBottom: 'clamp(6px, 1.5vw, 8px)', paddingLeft: 2,
                 }}>
                   1. Jenis Dokumen
                 </label>
@@ -181,15 +181,15 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
               </div>
 
               {/* ── 2. Keperluan ── */}
-              <div style={{ marginBottom: 24 }}>
+              <div style={{ marginBottom: 'clamp(20px, 4vw, 24px)' }}>
                 <label style={{
-                  fontSize: 11, fontWeight: 600, color: '#999',
+                  fontSize: 'clamp(10px, 2.2vw, 11px)', fontWeight: 600, color: '#999',
                   textTransform: 'uppercase', letterSpacing: '0.08em',
-                  display: 'block', marginBottom: 8, paddingLeft: 2,
+                  display: 'block', marginBottom: 'clamp(6px, 1.5vw, 8px)', paddingLeft: 2,
                 }}>
                   2. Keperluan
                 </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(6px, 1.5vw, 8px)' }}>
                   {KEPERLUAN.map(k => {
                     const sel = keperluan === k;
                     return (
@@ -197,15 +197,19 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
                         key={k}
                         onClick={() => setKeperluan(k)}
                         style={{
-                          padding: '8px 16px',
+                          padding: 'clamp(10px, 2vw, 12px) clamp(14px, 3vw, 16px)',
                           borderRadius: 6,
                           border: sel ? '1.5px solid #CC0000' : '1.5px solid #E8E8E8',
                           background: sel ? '#CC0000' : '#fff',
                           cursor: 'pointer',
-                          fontSize: 13, fontWeight: sel ? 600 : 400,
+                          fontSize: 'clamp(12px, 2.8vw, 13px)', fontWeight: sel ? 600 : 400,
                           color: sel ? '#fff' : '#555',
                           transition: 'all 0.12s',
                           letterSpacing: '-0.01em',
+                          minHeight: 44,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                         }}
                       >
                         {k}
@@ -216,12 +220,17 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
               </div>
 
               {/* ── 3 & 4 side by side ── */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 32 }}>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', 
+                gap: 'clamp(12px, 3vw, 16px)', 
+                marginBottom: 'clamp(24px, 5vw, 32px)' 
+              }}>
                 <div>
                   <label style={{
-                    fontSize: 11, fontWeight: 600, color: '#999',
+                    fontSize: 'clamp(10px, 2.2vw, 11px)', fontWeight: 600, color: '#999',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
-                    display: 'block', marginBottom: 8, paddingLeft: 2,
+                    display: 'block', marginBottom: 'clamp(6px, 1.5vw, 8px)', paddingLeft: 2,
                   }}>
                     3. Status
                   </label>
@@ -239,9 +248,9 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
 
                 <div>
                   <label style={{
-                    fontSize: 11, fontWeight: 600, color: '#999',
+                    fontSize: 'clamp(10px, 2.2vw, 11px)', fontWeight: 600, color: '#999',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
-                    display: 'block', marginBottom: 8, paddingLeft: 2,
+                    display: 'block', marginBottom: 'clamp(6px, 1.5vw, 8px)', paddingLeft: 2,
                   }}>
                     4. Kewarganegaraan
                   </label>
@@ -264,16 +273,17 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
                 disabled={!canSubmit}
                 style={{
                   width: '100%',
-                  padding: '13px 24px',
+                  padding: 'clamp(14px, 3vw, 16px) clamp(20px, 4vw, 24px)',
                   borderRadius: 8,
                   border: 'none',
                   background: canSubmit ? '#CC0000' : '#E8E8E8',
                   color: canSubmit ? '#fff' : '#bbb',
-                  fontSize: 15, fontWeight: 600,
+                  fontSize: 'clamp(14px, 3.2vw, 15px)', fontWeight: 600,
                   cursor: canSubmit ? 'pointer' : 'default',
                   letterSpacing: '-0.01em',
                   transition: 'background 0.15s',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  minHeight: 48,
                 }}
                 onMouseEnter={e => { if (canSubmit) e.currentTarget.style.background = '#A30000'; }}
                 onMouseLeave={e => { if (canSubmit) e.currentTarget.style.background = '#CC0000'; }}
@@ -327,23 +337,25 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
               {/* Result Header */}
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                marginBottom: 20, flexWrap: 'wrap', gap: 12,
+                marginBottom: 'clamp(16px, 3vw, 20px)', flexWrap: 'wrap', gap: 'clamp(10px, 2vw, 12px)',
               }}>
-                <div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, color: '#111', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 style={{ fontSize: 'clamp(16px, 3.5vw, 18px)', fontWeight: 700, color: '#111', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
                     Checklist Berkas
                   </h3>
-                  <p style={{ fontSize: 13, color: '#6B6B6B', margin: 0 }}>
+                  <p style={{ fontSize: 'clamp(12px, 2.5vw, 13px)', color: '#6B6B6B', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {jenisLayanan} — {keperluan} — {statusNikah}
                   </p>
                 </div>
                 <button
                   onClick={handleReset}
                   style={{
-                    fontSize: 13, fontWeight: 500, color: '#6B6B6B',
+                    fontSize: 'clamp(12px, 2.5vw, 13px)', fontWeight: 500, color: '#6B6B6B',
                     background: 'none', border: '1px solid #E8E8E8',
-                    borderRadius: 6, padding: '6px 14px', cursor: 'pointer',
+                    borderRadius: 6, padding: 'clamp(8px, 1.5vw, 10px) clamp(12px, 2.5vw, 14px)', cursor: 'pointer',
                     transition: 'all 0.15s',
+                    minHeight: 36,
+                    flexShrink: 0,
                   }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = '#CC0000'; e.currentTarget.style.color = '#CC0000'; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E8E8'; e.currentTarget.style.color = '#6B6B6B'; }}
@@ -354,16 +366,16 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
 
               {/* Progress bar */}
               {totalCheckboxes > 0 && (
-                <div style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 'clamp(20px, 4vw, 24px)' }}>
                   <div style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    marginBottom: 8,
+                    marginBottom: 'clamp(6px, 1.5vw, 8px)',
                   }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>
+                    <span style={{ fontSize: 'clamp(12px, 2.5vw, 13px)', fontWeight: 600, color: '#111' }}>
                       Kesiapan berkas
                     </span>
                     <span style={{
-                      fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums',
+                      fontSize: 'clamp(12px, 2.5vw, 13px)', fontWeight: 700, fontVariantNumeric: 'tabular-nums',
                       color: progress === 100 ? '#22c55e' : '#CC0000',
                     }}>
                       {checkedItems.size}/{totalCheckboxes}
@@ -497,12 +509,12 @@ function BerkasMarkdown({
                   textDecoration: isChecked ? 'line-through' : 'none',
                   flex: 1,
                 }}>
-                  {Children.map(children, child => {
+                  {Array.isArray(children) ? children.map((child, i) => {
                     if (typeof child === 'string') {
                       return child.replace(/\[[ x]\]\s*/g, '');
                     }
                     return child;
-                  })}
+                  }) : typeof children === 'string' ? children.replace(/\[[ x]\]\s*/g, '') : children}
                 </span>
               </li>
             );
