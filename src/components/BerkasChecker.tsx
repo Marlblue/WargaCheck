@@ -167,15 +167,14 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
                 }}>
                   1. Jenis Dokumen
                 </label>
-                <div style={{ border: '1px solid #E8E8E8', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {JENIS_LAYANAN.map((j, i) => (
-                    <div key={j} style={{ borderBottom: i < JENIS_LAYANAN.length - 1 ? 'none' : 'none' }}>
-                      <OptionButton
-                        selected={jenisLayanan === j}
-                        label={j}
-                        onClick={() => setJenisLayanan(j)}
-                      />
-                    </div>
+                    <OptionButton
+                      key={j}
+                      selected={jenisLayanan === j}
+                      label={j}
+                      onClick={() => setJenisLayanan(j)}
+                    />
                   ))}
                 </div>
               </div>
@@ -234,7 +233,7 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
                   }}>
                     3. Status
                   </label>
-                  <div style={{ border: '1px solid #E8E8E8', borderRadius: 8, overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {STATUS_NIKAH.map(s => (
                       <OptionButton
                         key={s}
@@ -254,7 +253,7 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
                   }}>
                     4. Kewarganegaraan
                   </label>
-                  <div style={{ border: '1px solid #E8E8E8', borderRadius: 8, overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {KEWARGANEGARAAN.map(k => (
                       <OptionButton
                         key={k}

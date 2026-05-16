@@ -297,27 +297,27 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
             <p style={{ fontSize: 'clamp(10px, 2.2vw, 11px)', color: '#CC0000', marginBottom: 'clamp(10px, 2vw, 12px)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Pertanyaan Populer
             </p>
-            <div style={{ border: '1px solid #E8E8E8', borderRadius: 8, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
               {QUICK_REPLIES.map((q, i) => (
                 <button key={q} onClick={() => handleSend(q)} style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 14px',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 2px',
                   background: 'none',
                   border: 'none',
-                  borderBottom: i < QUICK_REPLIES.length - 1 ? '1px solid #F0F0F0' : 'none',
+                  borderBottom: '1px solid #F0F0F0',
                   cursor: 'pointer',
                   textAlign: 'left',
                   width: '100%',
-                  transition: 'background 0.1s',
-                  fontSize: 'clamp(13px, 3vw, 14px)', fontWeight: 400,
-                  color: '#555',
+                  transition: 'all 0.15s',
+                  fontSize: 'clamp(13.5px, 3vw, 14.5px)', fontWeight: 400,
+                  color: '#444',
                   letterSpacing: '-0.01em',
-                  minHeight: 44,
+                  minHeight: 48,
                 }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#FAFAFA'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                  onMouseEnter={e => { e.currentTarget.style.paddingLeft = '8px'; e.currentTarget.style.color = '#CC0000'; }}
+                  onMouseLeave={e => { e.currentTarget.style.paddingLeft = '2px'; e.currentTarget.style.color = '#444'; }}
                 >
-                  <span style={{ fontSize: 'clamp(10px, 2vw, 11px)', fontWeight: 700, color: '#CC0000', opacity: 0.4, fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 'clamp(10px, 2vw, 11px)', fontWeight: 700, color: '#CC0000', opacity: 0.3, fontVariantNumeric: 'tabular-nums', width: 20 }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   {q}
