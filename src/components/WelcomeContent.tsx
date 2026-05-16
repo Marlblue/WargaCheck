@@ -390,12 +390,4 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
       </footer>
     </div>
   );
-}
-masi ke instansi resmi setempat.
-            </span>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
+}
