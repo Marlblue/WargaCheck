@@ -451,7 +451,8 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
                 </div>
                 <div style={{
                   padding: '12px 16px', borderRadius: '4px 12px 12px 12px',
-                  background: '#F7F7F7', display: 'flex', alignItems: 'center', gap: 5,
+                  background: '#F7F7F7', display: 'inline-flex', alignItems: 'center', gap: 5,
+                  width: 'fit-content',
                 }}>
                   <span className="dot-1" style={{ width: 5, height: 5, borderRadius: '50%', background: '#CC0000', display: 'inline-block' }} />
                   <span className="dot-2" style={{ width: 5, height: 5, borderRadius: '50%', background: '#CC0000', display: 'inline-block' }} />
