@@ -332,7 +332,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
                 transition={{ duration: 0.18 }}
                 style={{ color: '#CC0000', flexShrink: 0, marginLeft: 12 }}
               >
-                <path d="M4 10h12M12 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M4 10h12M12 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </motion.svg>
             </motion.button>
           ))}
@@ -402,7 +402,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
                 }}>
                   Konsultasi
                   <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                    <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
               </motion.button>
@@ -513,7 +513,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
                   <p style={{ fontSize: 12, color: 'rgba(240,237,232,0.38)', margin: 0, fontFamily: 'system-ui, sans-serif', lineHeight: 1.55 }}>{link.desc}</p>
                 </div>
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style={{ color: '#CC0000' }}>
-                  <path d="M2 10L10 2M10 2H5M10 2v5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 10L10 2M10 2H5M10 2v5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </motion.a>
             ))}

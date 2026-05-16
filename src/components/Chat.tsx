@@ -75,7 +75,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
     if (!text || isLoading) return;
 
     const userMsg: Message = { id: Date.now().toString(), role: 'user', text, timestamp: new Date().toISOString() };
-    
+
     // Add user message immediately
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -93,31 +93,31 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
     try {
       // Build history from prior messages only (not including current message)
       // Server adds the current message separately from the 'message' field
-      const history = messages.map(m => ({ 
-        role: m.role, 
-        parts: [{ text: m.text }] 
+      const history = messages.map(m => ({
+        role: m.role,
+        parts: [{ text: m.text }]
       }));
-      
+
       const response = await sendMessage(text, history);
       const fullText = response || 'Maaf, saya sedang mengalami kendala. Bisa diulangi?';
-      
+
       // Stop "loading" (dots) and start "streaming" (typing text)
       setIsLoading(false);
       setIsStreaming(true);
-      
+
       // Streaming effect - type out character by character
       // We use word-based streaming for natural feel
       const words = fullText.split(' ');
       let currentText = '';
-      
+
       for (let i = 0; i < words.length; i++) {
         currentText += (i > 0 ? ' ' : '') + words[i];
         setStreamingText(currentText);
-        
+
         // Dynamic delay based on word length for more natural feel
         const delay = Math.min(60, 20 + words[i].length * 2);
         await new Promise(resolve => setTimeout(resolve, delay));
-        
+
         // Auto-scroll during streaming
         if (scrollRef.current) {
           const isAtBottom = scrollRef.current.scrollHeight - scrollRef.current.scrollTop <= scrollRef.current.clientHeight + 100;
@@ -126,10 +126,10 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           }
         }
       }
-      
+
       // Generate smart suggestions based on response
       const suggestions = generateSuggestions(fullText, text);
-      
+
       const botMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'model',
@@ -137,7 +137,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
         timestamp: new Date().toISOString(),
         suggestions,
       };
-      
+
       setMessages(prev => [...prev, botMsg]);
       setStreamingText('');
       setIsStreaming(false);
@@ -161,31 +161,31 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
   // Generate smart follow-up suggestions
   const generateSuggestions = (response: string, userQuestion: string): string[] => {
     const suggestions: string[] = [];
-    
+
     // Check what's in the response to generate relevant suggestions
     if (response.toLowerCase().includes('biaya') || response.toLowerCase().includes('gratis')) {
       suggestions.push('Berapa lama prosesnya?');
     } else {
       suggestions.push('Berapa biayanya?');
     }
-    
+
     if (response.toLowerCase().includes('hari') || response.toLowerCase().includes('minggu')) {
       suggestions.push('Bisa dipercepat?');
     } else {
       suggestions.push('Berapa lama prosesnya?');
     }
-    
+
     if (response.toLowerCase().includes('dokumen') || response.toLowerCase().includes('berkas')) {
       suggestions.push('Buatkan checklist lengkapnya');
     } else {
       suggestions.push('Dokumen apa saja yang perlu disiapkan?');
     }
-    
+
     // Always add a generic helpful suggestion
     if (!response.toLowerCase().includes('online')) {
       suggestions.push('Bisa diurus online?');
     }
-    
+
     // Return max 3 unique suggestions
     return [...new Set(suggestions)].slice(0, 3);
   };
@@ -252,7 +252,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
             onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E8E8'; e.currentTarget.style.color = '#999'; }}
           >
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-              <path d="M2 3.5h10M5.5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M11.5 3.5l-.7 7.3a1 1 0 0 1-1 .9H4.2a1 1 0 0 1-1-.9L2.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 3.5h10M5.5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M11.5 3.5l-.7 7.3a1 1 0 0 1-1 .9H4.2a1 1 0 0 1-1-.9L2.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Hapus riwayat
           </button>
@@ -260,11 +260,11 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
       )}
 
       {/* ── Messages ── */}
-      <div 
-        ref={scrollRef} 
-        style={{ 
-          flex: 1, 
-          overflowY: 'auto', 
+      <div
+        ref={scrollRef}
+        style={{
+          flex: 1,
+          overflowY: 'auto',
           padding: 'clamp(16px, 4vw, 24px) clamp(16px, 4vw, 20px) clamp(8px, 2vw, 12px)',
           background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
           display: 'flex',
@@ -280,24 +280,16 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           >
             {/* Hero empty state */}
             <div style={{
-              textAlign: 'center', padding: 'clamp(28px, 6vw, 40px) clamp(16px, 4vw, 24px)',
-              marginBottom: 'clamp(20px, 4vw, 28px)',
-              background: 'linear-gradient(135deg, #FFF0F0 0%, #fff 60%, #F7F7F7 100%)',
-              borderRadius: 16, border: '1px solid #F0F0F0',
+              marginBottom: 'clamp(24px, 5vw, 32px)',
             }}>
-              <div style={{
-                width: 52, height: 52, borderRadius: 14, background: '#CC0000',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto clamp(14px, 3vw, 18px)', boxShadow: '0 4px 16px rgba(204,0,0,0.2)',
+              <h2 style={{
+                fontSize: 'clamp(24px, 5.5vw, 28px)', fontWeight: 700,
+                color: '#111', letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 clamp(8px, 2vw, 12px)',
               }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-                </svg>
-              </div>
-              <h3 style={{ fontSize: 'clamp(18px, 4.2vw, 22px)', fontWeight: 700, color: '#111', margin: '0 0 clamp(6px, 1.5vw, 8px)', letterSpacing: '-0.03em' }}>
-                Hai, ada yang bisa dibantu?
-              </h3>
-              <p style={{ fontSize: 'clamp(13px, 3vw, 14px)', color: '#6B6B6B', margin: 0, lineHeight: 1.6, maxWidth: 340, marginLeft: 'auto', marginRight: 'auto' }}>
+                Hai, ada yang bisa<br />
+                <span style={{ color: '#CC0000' }}>dibantu?</span>
+              </h2>
+              <p style={{ fontSize: 'clamp(13px, 3vw, 14px)', color: '#6B6B6B', margin: 0, lineHeight: 1.6 }}>
                 Tanya prosedur, syarat, atau checklist berkas dokumen kependudukan apa saja.
               </p>
             </div>
@@ -305,31 +297,30 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
             <p style={{ fontSize: 'clamp(10px, 2.2vw, 11px)', color: '#CC0000', marginBottom: 'clamp(10px, 2vw, 12px)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Pertanyaan Populer
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid #F0F0F0', borderRadius: 12, overflow: 'hidden' }}>
+            <div style={{ border: '1px solid #E8E8E8', borderRadius: 8, overflow: 'hidden' }}>
               {QUICK_REPLIES.map((q, i) => (
                 <button key={q} onClick={() => handleSend(q)} style={{
-                  fontSize: 'clamp(13px, 3vw, 14px)', fontWeight: 500,
-                  padding: 'clamp(13px, 2.8vw, 15px) clamp(14px, 3vw, 16px)',
-                  background: '#fff', border: 'none',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 14px',
+                  background: 'none',
+                  border: 'none',
                   borderBottom: i < QUICK_REPLIES.length - 1 ? '1px solid #F0F0F0' : 'none',
-                  color: '#333', cursor: 'pointer',
+                  cursor: 'pointer',
                   textAlign: 'left',
-                  transition: 'all 0.15s',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                  minHeight: 48,
+                  width: '100%',
+                  transition: 'background 0.1s',
+                  fontSize: 'clamp(13px, 3vw, 14px)', fontWeight: 400,
+                  color: '#555',
+                  letterSpacing: '-0.01em',
+                  minHeight: 44,
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.color = '#CC0000'; e.currentTarget.style.background = '#FFF8F8'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = '#333'; e.currentTarget.style.background = '#fff'; }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#FAFAFA'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 'clamp(10px, 2vw, 11px)', fontWeight: 700, color: '#CC0000', opacity: 0.4, fontVariantNumeric: 'tabular-nums' }}>
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    {q}
+                  <span style={{ fontSize: 'clamp(10px, 2vw, 11px)', fontWeight: 700, color: '#CC0000', opacity: 0.4, fontVariantNumeric: 'tabular-nums' }}>
+                    {String(i + 1).padStart(2, '0')}
                   </span>
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, color: 'inherit', opacity: 0.4 }}>
-                    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  {q}
                 </button>
               ))}
             </div>
@@ -473,7 +464,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           {/* Streaming response */}
           {isStreaming && streamingText && (
             <motion.div key="streaming"
-              initial={{ opacity: 0, y: 6 }} 
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, gap: 10 }}
             >
@@ -542,8 +533,8 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           onMouseLeave={e => { if (!isLoading) e.currentTarget.style.background = '#F7F7F7'; }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CC0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-            <circle cx="12" cy="13" r="4"/>
+            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+            <circle cx="12" cy="13" r="4" />
           </svg>
         </button>
 
@@ -585,7 +576,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           onMouseLeave={e => { if (input.trim() && !isLoading) e.currentTarget.style.background = '#CC0000'; }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !isLoading ? '#fff' : '#bbb'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
         </button>
       </div>
