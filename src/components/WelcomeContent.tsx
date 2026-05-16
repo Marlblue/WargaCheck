@@ -12,16 +12,19 @@ interface WelcomeContentProps {
 
 const GLOBAL_STYLE = `
   :root {
-    --px: clamp(24px, 6vw, 120px);
-    --section-py: clamp(64px, 10vw, 120px);
+    --px: clamp(20px, 5vw, 80px);
+    --section-py: clamp(56px, 8vw, 104px);
   }
   * { box-sizing: border-box; }
-  @media (max-width: 768px) {
-    .hero-stats { gap: 32px !important; }
-    .persona-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
-    .how-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
+  @media (max-width: 640px) {
+    .hero-stats { gap: 24px !important; }
+    .persona-grid { grid-template-columns: 1fr !important; gap: 2px !important; }
+    .how-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
     .links-grid { grid-template-columns: 1fr !important; }
-    .link-item { border-right: none !important; border-bottom: 1px solid #F0F0F0 !important; padding-bottom: 24px !important; }
+    .link-item { border-right: none !important; padding-left: 0 !important; border-bottom: 1px solid rgba(240,237,232,0.06) !important; padding-bottom: 20px !important; }
+    .topic-tag { display: none !important; }
+    .footer-inner { flex-direction: column !important; align-items: flex-start !important; }
+    .footer-disclaimer { text-align: left !important; }
   }
 `;
 
@@ -35,53 +38,65 @@ const topics = [
 ];
 
 const personas = [
-  { label: 'Mahasiswa Rantau', detail: 'Urus KTP, KK, dan surat pindah domisili untuk keperluan perkuliahan.', prompt: 'Saya mahasiswa yang baru pindah ke kota lain untuk kuliah. Dokumen apa saja yang perlu saya urus?', num: '01' },
-  { label: 'Pekerja Profesional', detail: 'Pembuatan SKCK, update data KK, dan dokumen administratif karir.', prompt: 'Saya perlu membuat SKCK dan dokumen lain untuk melamar kerja. Apa saja yang harus disiapkan?', num: '02' },
-  { label: 'Ibu Rumah Tangga', detail: 'Pencatatan akta kelahiran anak dan pembaruan anggota Kartu Keluarga.', prompt: 'Saya baru melahirkan dan perlu mengurus akta kelahiran anak. Bagaimana prosedurnya?', num: '03' },
+  { label: 'Mahasiswa Rantau', detail: 'KTP, KK, surat pindah untuk kuliah di kota lain', prompt: 'Saya mahasiswa yang baru pindah ke kota lain untuk kuliah. Dokumen apa saja yang perlu saya urus?', num: '01' },
+  { label: 'Pekerja Profesional', detail: 'SKCK, akta nikah, dokumen untuk melamar kerja', prompt: 'Saya perlu membuat SKCK dan dokumen lain untuk melamar kerja. Apa saja yang harus disiapkan?', num: '02' },
+  { label: 'Ibu Rumah Tangga', detail: 'Akta lahir anak, KK, dokumen keluarga', prompt: 'Saya baru melahirkan dan perlu mengurus akta kelahiran anak. Bagaimana prosedurnya?', num: '03' },
 ];
 
 const officialLinks = [
-  { label: 'Dukcapil Kemendagri', desc: 'Portal resmi Direktorat Jenderal Kependudukan dan Pencatatan Sipil.', url: 'https://www.dukcapil.kemendagri.go.id/' },
-  { label: 'Layanan Online', desc: 'Akses pendaftaran layanan administrasi kependudukan secara digital.', url: 'https://layanandukcapil.kemendagri.go.id/' },
-  { label: 'SAPA Dukcapil', desc: 'Layanan pengaduan dan bantuan informasi resmi pemerintah.', url: 'https://sapa.dukcapil.kemendagri.go.id/' },
+  { label: 'Dukcapil Kemendagri', desc: 'Portal resmi Dirjen Kependudukan dan Pencatatan Sipil', url: 'https://www.dukcapil.kemendagri.go.id/' },
+  { label: 'Layanan Online Dukcapil', desc: 'Akses layanan dokumen secara online tanpa antre', url: 'https://layanandukcapil.kemendagri.go.id/' },
+  { label: 'SAPA Dukcapil', desc: 'Pengaduan dan konsultasi informasi kependudukan', url: 'https://sapa.dukcapil.kemendagri.go.id/' },
 ];
 
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1800&q=85&auto=format&fit=crop';
-const HERO_IMAGE_ALT = 'https://images.unsplash.com/photo-1555636222-cae831e670b3?w=1800&q=85&auto=format&fit=crop';
+// Unsplash photos — civic / urban Indonesia feel
+// 1. Government building / civic hall
+// 2. People walking in city
+// 3. Document / paperwork
+const HERO_IMAGE = 'https://images.unsplash.com/photo-1555636222-cae831e670b3?w=1800&q=85&auto=format&fit=crop';
+// fallback: wide shot of Indonesian city street
+const HERO_IMAGE_ALT = 'https://images.unsplash.com/photo-1581579186913-45ac9e9a4d53?w=1800&q=85&auto=format&fit=crop';
+
+const sectionPad: React.CSSProperties = {
+  paddingTop: 'var(--section-py)',
+  paddingBottom: 'var(--section-py)',
+  paddingLeft: 'var(--px)',
+  paddingRight: 'var(--px)',
+};
 
 export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: WelcomeContentProps) {
   const [hoveredTopic, setHoveredTopic] = useState<number | null>(null);
+  const [hoveredPersona, setHoveredPersona] = useState<number | null>(null);
   const [imgSrc, setImgSrc] = useState(HERO_IMAGE);
   const heroRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const imgY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
-  const heroContentY = useTransform(scrollYProgress, [0, 1], ['0%', '10%']);
-  const heroContentOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const imgScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '14%']);
 
   return (
-    <div style={{ background: '#FFFFFF', color: '#1A1A1A', fontFamily: '"Inter", sans-serif', overflowX: 'hidden' }}>
+    <div style={{ background: '#0C0C0C', color: '#F0EDE8', fontFamily: "'Georgia', 'Times New Roman', serif", overflowX: 'hidden' }}>
       <style>{GLOBAL_STYLE}</style>
 
-      {/* ─── HERO ─── */}
+      {/* ─── HERO — full viewport with parallax photo ─── */}
       <section
         ref={heroRef}
         style={{
           position: 'relative',
           height: '100svh',
-          minHeight: 680,
+          minHeight: 560,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
+          justifyContent: 'flex-end',
           overflow: 'hidden',
-          background: '#FFFFFF',
         }}
       >
-        {/* Parallax Image Layer */}
+        {/* ── Parallax photo layer ── */}
         <motion.div
           style={{
-            position: 'absolute', inset: 0,
-            y: imgY,
+            position: 'absolute', inset: '-10% 0',
+            scale: imgScale,
             zIndex: 0,
           }}
         >
@@ -89,112 +104,131 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             src={imgSrc}
             onError={() => setImgSrc(HERO_IMAGE_ALT)}
             alt=""
+            aria-hidden="true"
             style={{
-              width: '100%', height: '120%',
-              objectFit: 'cover', objectPosition: 'center 40%',
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'center 30%',
               display: 'block',
-              filter: 'grayscale(10%) contrast(105%)',
             }}
           />
         </motion.div>
 
-        {/* Overlays */}
+        {/* ── Gradient overlays: dark vignette bottom + subtle top ── */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 1,
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 40%, rgba(255,255,255,0.1) 100%)',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.05) 20%, rgba(0,0,0,0.1) 35%, rgba(0,0,0,0.6) 65%, rgba(8,8,8,0.97) 100%)',
         }} />
-        
-        {/* Decorative Red Accent */}
+        {/* Red tint accent — bottom left corner */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, width: '50%', height: '60%', zIndex: 1,
+          background: 'radial-gradient(ellipse at 0% 100%, rgba(160,0,0,0.18) 0%, transparent 65%)',
+          pointerEvents: 'none',
+        }} />
+
+        {/* ── Grain ── */}
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          opacity: 0.035, mixBlendMode: 'overlay',
+        }} />
+
+        {/* ── Red vertical accent line ── */}
         <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: 4 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: 1 }}
+          transition={{ duration: 1.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           style={{
-            position: 'absolute', left: 0, top: '25%', bottom: '25%',
-            background: '#CC0000', zIndex: 2,
+            position: 'absolute',
+            left: 'clamp(20px, 3.5vw, 48px)',
+            top: '15%', bottom: '12%', width: 1,
+            background: 'linear-gradient(to bottom, transparent, #CC0000 20%, #CC0000 80%, transparent)',
+            transformOrigin: 'top', zIndex: 3,
           }}
         />
 
-        {/* Hero Content */}
+        {/* ── Inline nav — blends into hero ── */}
         <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.7 }}
           style={{
-            position: 'relative', zIndex: 3,
-            paddingLeft: 'var(--px)',
-            paddingRight: 'var(--px)',
-            y: heroContentY,
-            opacity: heroContentOpacity,
-            maxWidth: 1400,
-            margin: '0 auto',
-            width: '100%',
+            position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
+            padding: 'clamp(20px, 3vw, 28px) var(--px)',
+            paddingLeft: 'clamp(44px, 6.5vw, 88px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)',
           }}
         >
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            style={{
-              fontSize: 'clamp(12px, 1.5vw, 14px)',
-              fontWeight: 700,
-              color: '#CC0000',
-              textTransform: 'uppercase',
-              letterSpacing: '0.2em',
-              marginBottom: 20,
-            }}
-          >
-            Layanan AI Kependudukan Indonesia
-          </motion.p>
-
-          <div style={{ overflow: 'hidden' }}>
-            <motion.h1
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-              style={{
-                fontSize: 'clamp(40px, 8vw, 100px)',
-                fontWeight: 900,
-                lineHeight: 0.95,
-                letterSpacing: '-0.04em',
-                margin: '0 0 24px',
-                color: '#1A1A1A',
-              }}
-            >
-              Urus Dokumen,<br />
-              <span style={{ color: '#CC0000' }}>Tanpa Bingung.</span>
-            </motion.h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           </div>
+          <span style={{ fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', color: 'rgba(240,237,232,0.45)' }}>
+            AI Asisten Kependudukan
+          </span>
+        </motion.div>
 
+        {/* ── Hero text content ── */}
+        <motion.div
+          style={{
+            opacity: heroOpacity, y: heroY,
+            position: 'relative', zIndex: 5,
+            paddingLeft: 'clamp(44px, 6.5vw, 88px)',
+            paddingRight: 'var(--px)',
+            paddingBottom: 'clamp(44px, 6vw, 72px)',
+          }}
+        >
+          {/* Eyebrow */}
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 1 }}
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.65, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              fontSize: 'clamp(16px, 2vw, 20px)',
-              lineHeight: 1.5,
-              color: '#555',
-              maxWidth: 580,
-              marginBottom: 48,
-              fontWeight: 400,
+              fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase',
+              fontFamily: 'system-ui, sans-serif', color: '#CC0000',
+              margin: '0 0 clamp(14px, 2.5vw, 24px)', fontWeight: 600,
             }}
           >
-            Solusi cerdas berbasis AI untuk panduan berkas kependudukan, estimasi waktu, dan biaya secara transparan.
+            Checklist Personal · Estimasi Waktu & Biaya
           </motion.p>
 
+          {/* Headline — 3-line mask reveal */}
+          {(['Tahu dokumen', 'apa yang dibawa,', 'sebelum berangkat.'] as const).map((line, i) => (
+            <div key={line} style={{ overflow: 'hidden', marginBottom: i < 2 ? 4 : 'clamp(28px, 4.5vw, 48px)' }}>
+              <motion.h1
+                initial={{ y: '105%' }}
+                animate={{ y: 0 }}
+                transition={{ delay: 0.8 + i * 0.11, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  fontSize: 'clamp(36px, 7.5vw, 90px)',
+                  fontWeight: 400, lineHeight: 0.96, letterSpacing: '-0.03em', margin: 0,
+                  color: i === 2 ? '#CC0000' : '#F0EDE8',
+                  fontStyle: i === 1 ? 'italic' : 'normal',
+                  textShadow: '0 2px 32px rgba(0,0,0,0.6)',
+                }}
+              >
+                {line}
+              </motion.h1>
+            </div>
+          ))}
+
+          {/* CTAs */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.6 }}
-            style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}
+            transition={{ delay: 1.15, duration: 0.6 }}
+            style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 'clamp(28px, 4vw, 44px)' }}
           >
             <button
               onClick={() => onQuickTopic('')}
               style={{
-                background: '#CC0000', color: '#FFFFFF', border: 'none',
-                padding: '18px 40px', borderRadius: 4, cursor: 'pointer',
-                fontSize: 14, fontWeight: 700, textTransform: 'uppercase',
-                letterSpacing: '0.1em', transition: 'all 0.2s',
-                boxShadow: '0 10px 30px rgba(204,0,0,0.2)',
+                background: '#CC0000', color: '#fff', border: 'none',
+                padding: 'clamp(11px, 1.8vw, 15px) clamp(20px, 3vw, 36px)',
+                borderRadius: 2, cursor: 'pointer',
+                fontSize: 'clamp(12px, 1.3vw, 14px)', letterSpacing: '0.06em', textTransform: 'uppercase',
+                fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                transition: 'background 0.18s, transform 0.18s',
+                boxShadow: '0 4px 24px rgba(200,0,0,0.35)',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#A30000'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#A80000'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = '#CC0000'; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
               Mulai Konsultasi
@@ -202,192 +236,309 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             <button
               onClick={onOpenBerkasChecker}
               style={{
-                background: '#FFFFFF', color: '#1A1A1A', border: '2px solid #1A1A1A',
-                padding: '16px 40px', borderRadius: 4, cursor: 'pointer',
-                fontSize: 14, fontWeight: 700, textTransform: 'uppercase',
-                letterSpacing: '0.1em', transition: 'all 0.2s',
+                background: 'rgba(240,237,232,0.08)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                color: 'rgba(240,237,232,0.8)',
+                border: '1px solid rgba(240,237,232,0.22)',
+                padding: 'clamp(11px, 1.8vw, 15px) clamp(20px, 3vw, 36px)',
+                borderRadius: 2, cursor: 'pointer',
+                fontSize: 'clamp(12px, 1.3vw, 14px)', letterSpacing: '0.06em', textTransform: 'uppercase',
+                fontFamily: 'system-ui, sans-serif', fontWeight: 600,
+                transition: 'all 0.18s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#F5F5F5'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(240,237,232,0.15)'; e.currentTarget.style.color = '#F0EDE8'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(240,237,232,0.08)'; e.currentTarget.style.color = 'rgba(240,237,232,0.8)'; }}
             >
-              Cek Berkas
+              Cek Kelengkapan Berkas
             </button>
+          </motion.div>
+
+          {/* Stats row */}
+          <motion.div
+            className="hero-stats"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.45, duration: 0.7 }}
+            style={{ display: 'flex', gap: 'clamp(24px, 5vw, 52px)', flexWrap: 'wrap' }}
+          >
+            {[
+              { v: '10+', l: 'Jenis dokumen' },
+              { v: 'AI', l: 'Powered by Gemini' },
+              { v: '24/7', l: 'Selalu tersedia' },
+            ].map(s => (
+              <div key={s.l}>
+                <div style={{ fontSize: 'clamp(20px, 2.8vw, 26px)', fontWeight: 400, color: '#F0EDE8', letterSpacing: '-0.025em', lineHeight: 1 }}>{s.v}</div>
+                <div style={{ fontSize: 10, color: 'rgba(240,237,232,0.42)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', marginTop: 4 }}>{s.l}</div>
+              </div>
+            ))}
           </motion.div>
         </motion.div>
       </section>
 
       {/* ─── TOPICS ─── */}
-      <section style={{ padding: 'var(--section-py) var(--px)', background: '#FFFFFF' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 64 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 800, color: '#CC0000', textTransform: 'uppercase', letterSpacing: '0.2em', margin: 0, whiteSpace: 'nowrap' }}>
-              Panduan Dokumen
-            </h2>
-            <div style={{ flex: 1, height: 1, background: '#F0F0F0' }} />
+      <section style={{ ...sectionPad, background: '#F4F1EC', color: '#1A1A1A', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'clamp(24px, 4vw, 44px)' }}>
+            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
+              Pilih Topik
+            </span>
+            <div style={{ flex: 1, height: '0.5px', background: 'rgba(0,0,0,0.14)' }} />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {topics.map((t, i) => (
+          {topics.map((t, i) => (
+            <motion.button
+              key={t.label}
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.055, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => onQuickTopic(t.prompt)}
+              onMouseEnter={() => setHoveredTopic(i)}
+              onMouseLeave={() => setHoveredTopic(null)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                width: '100%', padding: 'clamp(14px, 2.2vw, 20px) 0',
+                background: 'none', border: 'none', borderBottom: '0.5px solid rgba(0,0,0,0.1)',
+                cursor: 'pointer', textAlign: 'left',
+                transition: 'padding-left 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+                paddingLeft: hoveredTopic === i ? 10 : 0,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 'clamp(8px, 2vw, 20px)', minWidth: 0 }}>
+                <span
+                  className="topic-tag"
+                  style={{
+                    fontSize: 10, color: hoveredTopic === i ? '#CC0000' : 'rgba(0,0,0,0.3)',
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                    fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                    transition: 'color 0.18s', flexShrink: 0, width: 88,
+                  }}
+                >
+                  {t.tag}
+                </span>
+                <span style={{
+                  fontSize: 'clamp(19px, 3.2vw, 32px)',
+                  fontWeight: 400, letterSpacing: '-0.025em',
+                  color: hoveredTopic === i ? '#CC0000' : '#1A1A1A',
+                  transition: 'color 0.18s', lineHeight: 1.15,
+                }}>
+                  {t.label}
+                </span>
+              </div>
+              <motion.svg
+                width="17" height="17" viewBox="0 0 20 20" fill="none"
+                animate={{ x: hoveredTopic === i ? 5 : 0, opacity: hoveredTopic === i ? 1 : 0.22 }}
+                transition={{ duration: 0.18 }}
+                style={{ color: '#CC0000', flexShrink: 0, marginLeft: 12 }}
+              >
+                <path d="M4 10h12M12 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </motion.svg>
+            </motion.button>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── PERSONAS ─── */}
+      <section style={{ ...sectionPad, background: '#111' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'clamp(24px, 4vw, 52px)' }}>
+            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
+              Situasi Kamu
+            </span>
+            <div style={{ flex: 1, height: '0.5px', background: 'rgba(240,237,232,0.1)' }} />
+          </div>
+
+          <div
+            className="persona-grid"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1px', background: 'rgba(240,237,232,0.06)', borderRadius: 2, overflow: 'hidden' }}
+          >
+            {personas.map((p, i) => (
               <motion.button
-                key={t.label}
-                initial={{ opacity: 0, y: 20 }}
+                key={p.label}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                onClick={() => onQuickTopic(t.prompt)}
-                onMouseEnter={() => setHoveredTopic(i)}
-                onMouseLeave={() => setHoveredTopic(null)}
+                transition={{ delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                onClick={() => onQuickTopic(p.prompt)}
+                onMouseEnter={() => setHoveredPersona(i)}
+                onMouseLeave={() => setHoveredPersona(null)}
                 style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '32px 0', background: 'none', border: 'none',
-                  borderBottom: '1px solid #F0F0F0', cursor: 'pointer', textAlign: 'left',
-                  transition: 'padding-left 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                  paddingLeft: hoveredTopic === i ? 16 : 0,
+                  background: hoveredPersona === i ? '#CC0000' : '#111',
+                  border: 'none',
+                  padding: 'clamp(28px, 4vw, 44px) clamp(22px, 3vw, 36px)',
+                  cursor: 'pointer', textAlign: 'left',
+                  transition: 'background 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
+                  display: 'flex', flexDirection: 'column',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
-                  <span style={{ 
-                    fontSize: 12, fontWeight: 700, color: hoveredTopic === i ? '#CC0000' : '#BBB',
-                    fontVariantNumeric: 'tabular-nums', transition: 'color 0.3s'
-                  }}>
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <span style={{
-                    fontSize: 'clamp(24px, 4vw, 48px)', fontWeight: 800,
-                    color: hoveredTopic === i ? '#CC0000' : '#1A1A1A',
-                    letterSpacing: '-0.03em', transition: 'color 0.3s',
-                  }}>
-                    {t.label}
-                  </span>
+                <div style={{
+                  fontSize: 10, letterSpacing: '0.13em', textTransform: 'uppercase',
+                  fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                  color: hoveredPersona === i ? 'rgba(255,255,255,0.5)' : 'rgba(240,237,232,0.25)',
+                  marginBottom: 18, transition: 'color 0.28s',
+                }}>
+                  {p.num}
                 </div>
-                <motion.svg
-                  width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  animate={{ x: hoveredTopic === i ? 8 : 0, opacity: hoveredTopic === i ? 1 : 0.2 }}
-                  style={{ color: '#CC0000', strokeWidth: 3 }}
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                </motion.svg>
+                <div style={{
+                  fontSize: 'clamp(21px, 2.6vw, 28px)', fontWeight: 400, letterSpacing: '-0.025em',
+                  color: '#F0EDE8', lineHeight: 1.1, marginBottom: 10,
+                }}>
+                  {p.label}
+                </div>
+                <div style={{
+                  fontSize: 13, lineHeight: 1.6, fontFamily: 'system-ui, sans-serif',
+                  color: hoveredPersona === i ? 'rgba(255,255,255,0.82)' : 'rgba(240,237,232,0.42)',
+                  transition: 'color 0.28s', marginBottom: 28, flex: 1,
+                }}>
+                  {p.detail}
+                </div>
+                <div style={{
+                  fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase',
+                  fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                  color: hoveredPersona === i ? '#fff' : '#CC0000',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  transition: 'color 0.28s',
+                }}>
+                  Konsultasi
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
               </motion.button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── SITUATION (PERSONAS) ─── */}
-      <section style={{ padding: 'var(--section-py) var(--px)', background: '#F9F9F9' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 80 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 800, color: '#CC0000', textTransform: 'uppercase', letterSpacing: '0.2em', margin: 0, whiteSpace: 'nowrap' }}>
-              Berdasarkan Situasi
-            </h2>
-            <div style={{ flex: 1, height: 1, background: '#E0E0E0' }} />
-          </div>
-
-          <div className="persona-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 64 }}>
-            {personas.map((p, i) => (
-              <motion.div
-                key={p.label}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.2 }}
-                style={{ cursor: 'pointer' }}
-                onClick={() => onQuickTopic(p.prompt)}
-              >
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#CC0000', marginBottom: 20, letterSpacing: '0.1em' }}>
-                  SITUASI {p.num}
-                </div>
-                <h3 style={{ fontSize: 32, fontWeight: 800, marginBottom: 24, letterSpacing: '-0.02em' }}>{p.label}</h3>
-                <p style={{ fontSize: 16, lineHeight: 1.7, color: '#666', marginBottom: 32 }}>{p.detail}</p>
-                <div style={{ 
-                  display: 'inline-flex', alignItems: 'center', gap: 12,
-                  fontSize: 13, fontWeight: 700, color: '#CC0000', textTransform: 'uppercase',
-                  letterSpacing: '0.1em'
-                }}>
-                  Dapatkan Checklist
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                    <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ─── HOW IT WORKS ─── */}
-      <section style={{ padding: 'var(--section-py) var(--px)', background: '#CC0000', color: '#FFFFFF' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-          <div className="how-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 120, alignItems: 'center' }}>
+      <section style={{ ...sectionPad, background: '#F4F1EC', color: '#1A1A1A' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'clamp(24px, 4vw, 52px)' }}>
+            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
+              Cara Kerja
+            </span>
+            <div style={{ flex: 1, height: '0.5px', background: 'rgba(0,0,0,0.12)' }} />
+          </div>
+
+          <div
+            className="how-grid"
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(36px, 6vw, 88px)', alignItems: 'start' }}
+          >
             <div>
-              <h2 style={{ fontSize: 'clamp(32px, 5vw, 64px)', fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em', marginBottom: 32 }}>
-                Satu Kali Datang,<br />Langsung Selesai.
+              <h2 style={{
+                fontSize: 'clamp(28px, 4.2vw, 50px)', fontWeight: 400, letterSpacing: '-0.03em',
+                lineHeight: 1.08, margin: '0 0 18px',
+              }}>
+                Tiga langkah,<br />
+                <em>satu kali datang.</em>
               </h2>
-              <p style={{ fontSize: 18, lineHeight: 1.6, opacity: 0.8, maxWidth: 440 }}>
-                WargaCheck membantu Anda mempersiapkan berkas secara presisi sebelum melangkah ke kantor layanan publik.
+              <p style={{
+                fontSize: 15, color: 'rgba(0,0,0,0.52)', lineHeight: 1.7,
+                fontFamily: 'system-ui, sans-serif', margin: 0, maxWidth: 320,
+              }}>
+                AI analisis situasi kamu secara personal dan buatkan checklist yang sesuai — supaya tidak perlu bolak-balik ke kantor.
               </p>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
+
+            <div>
               {[
-                { n: '01', t: 'Identifikasi Kebutuhan', d: 'Ceritakan keperluan Anda, AI akan memetakan syarat yang sesuai.' },
-                { n: '02', t: 'Verifikasi Berkas', d: 'Checklist otomatis yang disesuaikan dengan aturan terbaru Dukcapil.' },
-                { n: '03', t: 'Siap Berangkat', d: 'Pastikan semua kotak tercentang, dokumen Anda siap diajukan.' },
+                { n: '01', t: 'Pilih dokumen atau ketik pertanyaan', d: 'Ceritakan situasimu — AI kami akan memahami konteksnya.' },
+                { n: '02', t: 'AI analisis dan buat checklist', d: 'Checklist personal lengkap dengan estimasi waktu dan biaya.' },
+                { n: '03', t: 'Centang dan berangkat', d: 'Datang ke kantor dengan berkas lengkap, langsung selesai.' },
               ].map((s, i) => (
-                <div key={i} style={{ display: 'flex', gap: 32 }}>
-                  <span style={{ fontSize: 14, fontWeight: 900, opacity: 0.4 }}>{s.n}</span>
+                <motion.div
+                  key={s.n}
+                  initial={{ opacity: 0, x: 14 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.5 }}
+                  style={{
+                    display: 'flex', gap: 18, padding: 'clamp(16px, 2.5vw, 26px) 0',
+                    borderBottom: i < 2 ? '0.5px solid rgba(0,0,0,0.1)' : 'none',
+                  }}
+                >
+                  <span style={{ fontSize: 10, color: '#CC0000', fontWeight: 700, letterSpacing: '0.07em', fontFamily: 'system-ui, sans-serif', paddingTop: 4, minWidth: 20, flexShrink: 0 }}>
+                    {s.n}
+                  </span>
                   <div>
-                    <h4 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>{s.t}</h4>
-                    <p style={{ fontSize: 16, opacity: 0.7, lineHeight: 1.5 }}>{s.d}</p>
+                    <p style={{ fontSize: 15, fontWeight: 400, color: '#1A1A1A', margin: '0 0 4px', lineHeight: 1.3 }}>{s.t}</p>
+                    <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.48)', margin: 0, fontFamily: 'system-ui, sans-serif', lineHeight: 1.55 }}>{s.d}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── LINKS & FOOTER ─── */}
-      <footer style={{ padding: 'var(--section-py) var(--px)', background: '#FFFFFF' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-          <div className="links-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0, borderTop: '1px solid #F0F0F0', borderBottom: '1px solid #F0F0F0' }}>
+      {/* ─── LINKS + FOOTER ─── */}
+      <section style={{ ...sectionPad, background: '#0C0C0C', borderTop: '0.5px solid rgba(240,237,232,0.07)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'clamp(20px, 3.5vw, 36px)' }}>
+            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
+              Tautan Resmi
+            </span>
+            <div style={{ flex: 1, height: '0.5px', background: 'rgba(240,237,232,0.08)' }} />
+          </div>
+
+          <div
+            className="links-grid"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0 }}
+          >
             {officialLinks.map((link, i) => (
-              <a
+              <motion.a
                 key={link.url}
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="link-item"
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.09, duration: 0.4 }}
                 style={{
-                  padding: '48px 24px',
-                  paddingLeft: i === 0 ? 0 : 24,
-                  borderRight: i < 2 ? '1px solid #F0F0F0' : 'none',
-                  textDecoration: 'none',
-                  display: 'flex', flexDirection: 'column', gap: 16,
-                  transition: 'opacity 0.2s',
+                  display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                  padding: 'clamp(14px, 2.2vw, 22px)',
+                  paddingLeft: i === 0 ? 0 : 'clamp(14px, 2.2vw, 22px)',
+                  borderRight: i < 2 ? '0.5px solid rgba(240,237,232,0.07)' : 'none',
+                  textDecoration: 'none', transition: 'opacity 0.18s',
+                  gap: 16, minHeight: 88,
                 }}
-                onMouseEnter={e => e.currentTarget.style.opacity = '0.6'}
-                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.6'}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
               >
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#1A1A1A' }}>{link.label}</div>
-                <div style={{ fontSize: 14, color: '#888', lineHeight: 1.5 }}>{link.desc}</div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CC0000" strokeWidth="3">
-                  <path d="M7 17L17 7M17 7H7M17 7V17" strokeLinecap="round" strokeLinejoin="round" />
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 400, color: '#F0EDE8', margin: '0 0 5px', letterSpacing: '-0.01em', lineHeight: 1.3 }}>{link.label}</p>
+                  <p style={{ fontSize: 12, color: 'rgba(240,237,232,0.38)', margin: 0, fontFamily: 'system-ui, sans-serif', lineHeight: 1.55 }}>{link.desc}</p>
+                </div>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style={{ color: '#CC0000' }}>
+                  <path d="M2 10L10 2M10 2H5M10 2v5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-              </a>
+              </motion.a>
             ))}
           </div>
 
-          <div style={{ marginTop: 64, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 32 }}>
-            <div>
-              <div style={{ fontSize: 20, fontWeight: 900, color: '#1A1A1A', marginBottom: 8, letterSpacing: '-0.02em' }}>WargaCheck</div>
-              <div style={{ fontSize: 13, color: '#BBB', fontWeight: 600 }}>© 2026 #JuaraVibeCoding</div>
-            </div>
-            <div style={{ fontSize: 13, color: '#AAA', maxWidth: 400, textAlign: 'right', lineHeight: 1.6 }}>
-              Layanan ini bersifat edukatif dan bantu. Selalu verifikasi data akhir pada instansi pemerintah terkait.
-            </div>
+          <div
+            className="footer-inner"
+            style={{
+              marginTop: 'clamp(32px, 5vw, 60px)', paddingTop: 22,
+              borderTop: '0.5px solid rgba(240,237,232,0.07)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12,
+            }}
+          >
+            <span style={{ fontSize: 12, color: 'rgba(240,237,232,0.22)', fontFamily: 'system-ui, sans-serif' }}>
+              © 2026 WargaCheck — <strong style={{ color: 'rgba(240,237,232,0.38)', fontWeight: 400 }}>#JuaraVibeCoding</strong>
+            </span>
+            <span
+              className="footer-disclaimer"
+              style={{ fontSize: 12, color: 'rgba(240,237,232,0.18)', fontFamily: 'system-ui, sans-serif', maxWidth: 380, textAlign: 'right', lineHeight: 1.55 }}
+            >
+              Informasi bersifat umum. Selalu konfirmasi ke instansi resmi setempat.
+            </span>
           </div>
         </div>
-      </footer>
+      </section>
     </div>
   );
-}
+}

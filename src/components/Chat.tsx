@@ -218,8 +218,8 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',
-      maxWidth: 800, width: '100%', margin: '0 auto',
-      height: 'calc(100dvh - 80px)',
+      maxWidth: 720, width: '100%', margin: '0 auto',
+      height: 'calc(100dvh - 52px)',
       background: '#fff',
       position: 'relative',
     }}>
@@ -228,34 +228,33 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
       {hasHistory && (
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '12px 24px',
+          padding: 'clamp(10px, 2.2vw, 12px) clamp(16px, 4vw, 20px)',
           borderBottom: '1px solid #F0F0F0',
-          background: '#FFFFFF',
+          background: '#FAFAFA',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#CC0000' }} />
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#1A1A1A', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              {messages.length} Pesan
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#CC0000', opacity: 0.6 }} />
+            <span style={{ fontSize: 'clamp(11px, 2.5vw, 12px)', fontWeight: 600, color: '#6B6B6B', letterSpacing: '-0.01em' }}>
+              {messages.length} pesan
             </span>
           </div>
           <button
             onClick={clearHistory}
             style={{
-              fontSize: 11, fontWeight: 700, color: '#999',
-              background: 'none', border: 'none',
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 6,
-              transition: 'all 0.2s',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em'
+              fontSize: 'clamp(11px, 2.5vw, 12px)', fontWeight: 500, color: '#999',
+              background: '#fff', border: '1px solid #E8E8E8',
+              borderRadius: 6, padding: 'clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 12px)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 5,
+              transition: 'all 0.15s',
+              minHeight: 32,
             }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#CC0000'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#999'; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#CC0000'; e.currentTarget.style.color = '#CC0000'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E8E8'; e.currentTarget.style.color = '#999'; }}
           >
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-              <path d="M2 3.5h10M5.5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M11.5 3.5l-.7 7.3a1 1 0 0 1-1 .9H4.2a1 1 0 0 1-1-.9L2.5 3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2 3.5h10M5.5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M11.5 3.5l-.7 7.3a1 1 0 0 1-1 .9H4.2a1 1 0 0 1-1-.9L2.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Hapus Riwayat
+            Hapus riwayat
           </button>
         </div>
       )}
@@ -266,8 +265,8 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
         style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '32px 24px',
-          background: '#FFFFFF',
+          padding: 'clamp(16px, 4vw, 24px) clamp(16px, 4vw, 20px) clamp(8px, 2vw, 12px)',
+          background: 'linear-gradient(to bottom, #ffffff, #fafafa)',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -277,51 +276,48 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
         {showQuickReplies && (
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            style={{ paddingBottom: 40 }}
+            style={{ paddingBottom: 'clamp(24px, 5vw, 32px)' }}
           >
             {/* Hero empty state */}
             <div style={{
-              marginBottom: 48,
+              marginBottom: 'clamp(24px, 5vw, 32px)',
             }}>
               <h2 style={{
-                fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 900,
-                color: '#1A1A1A', letterSpacing: '-0.04em', lineHeight: 1, margin: '0 0 16px',
+                fontSize: 'clamp(24px, 5.5vw, 28px)', fontWeight: 700,
+                color: '#111', letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 clamp(8px, 2vw, 12px)',
               }}>
-                Ada yang bisa<br />
-                <span style={{ color: '#CC0000' }}>kami bantu?</span>
+                Hai, ada yang bisa<br />
+                <span style={{ color: '#CC0000' }}>dibantu?</span>
               </h2>
-              <p style={{ fontSize: 16, color: '#666', margin: 0, lineHeight: 1.6, maxWidth: 440 }}>
-                Tanyakan prosedur, syarat, atau checklist dokumen kependudukan Indonesia dengan asisten AI kami.
+              <p style={{ fontSize: 'clamp(13px, 3vw, 14px)', color: '#6B6B6B', margin: 0, lineHeight: 1.6 }}>
+                Tanya prosedur, syarat, atau checklist berkas dokumen kependudukan apa saja.
               </p>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-              <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 800, whiteSpace: 'nowrap' }}>
-                Pertanyaan Populer
-              </span>
-              <div style={{ flex: 1, height: 1, background: '#F0F0F0' }} />
-            </div>
-
+            <p style={{ fontSize: 'clamp(10px, 2.2vw, 11px)', color: '#CC0000', marginBottom: 'clamp(10px, 2vw, 12px)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Pertanyaan Populer
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {QUICK_REPLIES.map((q, i) => (
                 <button key={q} onClick={() => handleSend(q)} style={{
-                  display: 'flex', alignItems: 'center', gap: 24,
-                  padding: '20px 0',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 2px',
                   background: 'none',
                   border: 'none',
                   borderBottom: '1px solid #F0F0F0',
                   cursor: 'pointer',
                   textAlign: 'left',
                   width: '100%',
-                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                  fontSize: 18, fontWeight: 700,
-                  color: '#1A1A1A',
-                  letterSpacing: '-0.02em',
+                  transition: 'all 0.15s',
+                  fontSize: 'clamp(13.5px, 3vw, 14.5px)', fontWeight: 400,
+                  color: '#444',
+                  letterSpacing: '-0.01em',
+                  minHeight: 48,
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.paddingLeft = '16px'; e.currentTarget.style.color = '#CC0000'; }}
-                  onMouseLeave={e => { e.currentTarget.style.paddingLeft = '0px'; e.currentTarget.style.color = '#1A1A1A'; }}
+                  onMouseEnter={e => { e.currentTarget.style.paddingLeft = '8px'; e.currentTarget.style.color = '#CC0000'; }}
+                  onMouseLeave={e => { e.currentTarget.style.paddingLeft = '2px'; e.currentTarget.style.color = '#444'; }}
                 >
-                  <span style={{ fontSize: 12, fontWeight: 800, color: '#CC0000', opacity: 0.3, fontVariantNumeric: 'tabular-nums', width: 24 }}>
+                  <span style={{ fontSize: 'clamp(10px, 2vw, 11px)', fontWeight: 700, color: '#CC0000', opacity: 0.3, fontVariantNumeric: 'tabular-nums', width: 20 }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   {q}
@@ -336,47 +332,47 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
             const isUser = msg.role === 'user';
             return (
               <motion.div key={msg.id}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.2 }}
                 style={{
                   display: 'flex',
                   justifyContent: isUser ? 'flex-end' : 'flex-start',
-                  marginBottom: 24,
+                  marginBottom: 'clamp(14px, 3vw, 16px)',
                 }}
               >
                 {/* AI avatar */}
                 {!isUser && (
-                  <div style={{ width: 32, flexShrink: 0, marginRight: 16, paddingTop: 18, display: 'flex', justifyContent: 'center' }}>
-                    <FlagIcon width={24} />
+                  <div style={{ width: 'clamp(24px, 5vw, 28px)', flexShrink: 0, marginRight: 'clamp(8px, 2vw, 10px)', paddingTop: 'clamp(16px, 3.5vw, 18px)', display: 'flex', justifyContent: 'center' }}>
+                    <FlagIcon width={22} />
                   </div>
                 )}
 
                 <div style={{ maxWidth: isUser ? '85%' : '80%' }}>
                   {/* Role label */}
                   <div style={{
-                    fontSize: 10, fontWeight: 800, color: '#BBB',
-                    marginBottom: 6,
+                    fontSize: 'clamp(10px, 2.2vw, 11px)', fontWeight: 600, color: '#999',
+                    marginBottom: 'clamp(3px, 1vw, 4px)',
                     textAlign: isUser ? 'right' : 'left',
-                    textTransform: 'uppercase', letterSpacing: '0.15em',
+                    textTransform: 'uppercase', letterSpacing: '0.06em',
                   }}>
                     {isUser ? 'Anda' : 'WargaCheck'} · {fmt(msg.timestamp)}
                   </div>
 
                   {/* Bubble */}
                   <div style={{
-                    padding: isUser ? '14px 20px' : '20px 24px',
-                    borderRadius: isUser ? '20px 4px 20px 20px' : '4px 20px 20px 20px',
-                    background: isUser ? '#CC0000' : '#FFFFFF',
-                    color: isUser ? '#FFFFFF' : '#1A1A1A',
-                    fontSize: 15,
-                    lineHeight: 1.7,
+                    padding: isUser ? 'clamp(10px, 2.2vw, 12px) clamp(12px, 2.8vw, 14px)' : 'clamp(12px, 2.8vw, 14px) clamp(14px, 3.2vw, 16px)',
+                    borderRadius: isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
+                    background: isUser ? 'linear-gradient(135deg, #CC0000 0%, #A30000 100%)' : '#fff',
+                    color: isUser ? '#fff' : '#111',
+                    fontSize: 'clamp(13px, 3vw, 14.5px)',
+                    lineHeight: 1.65,
                     wordBreak: 'break-word',
-                    boxShadow: isUser ? '0 8px 24px rgba(204, 0, 0, 0.15)' : '0 4px 12px rgba(0,0,0,0.03)',
+                    boxShadow: isUser ? '0 2px 8px rgba(204, 0, 0, 0.15)' : '0 2px 6px rgba(0,0,0,0.04)',
                     border: isUser ? 'none' : '1px solid #F0F0F0',
                   }}>
                     {isUser ? (
-                      <span style={{ fontWeight: 500 }}>{msg.text}</span>
+                      <span>{msg.text}</span>
                     ) : (
                       <div className="md">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
@@ -393,40 +389,39 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
                       style={{
                         display: 'flex',
                         flexWrap: 'wrap',
-                        gap: 8,
-                        marginTop: 12,
+                        gap: 'clamp(6px, 1.5vw, 8px)',
+                        marginTop: 'clamp(8px, 2vw, 10px)',
                       }}
                     >
                       {msg.suggestions.map((suggestion, idx) => (
                         <motion.button
                           key={idx}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
                           onClick={() => handleSend(suggestion)}
                           disabled={isLoading}
                           style={{
-                            fontSize: 12,
-                            fontWeight: 700,
+                            fontSize: 'clamp(11px, 2.5vw, 12px)',
+                            fontWeight: 500,
                             color: '#CC0000',
-                            background: '#FFFFFF',
+                            background: '#fff',
                             border: '1px solid #CC0000',
-                            borderRadius: 6,
-                            padding: '8px 16px',
+                            borderRadius: 9999,
+                            padding: 'clamp(7px, 1.8vw, 8px) clamp(11px, 2.5vw, 12px)',
                             cursor: isLoading ? 'default' : 'pointer',
-                            transition: 'all 0.2s',
+                            transition: 'all 0.15s',
                             opacity: isLoading ? 0.5 : 1,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em'
+                            minHeight: 32,
                           }}
                           onMouseEnter={e => {
                             if (!isLoading) {
                               e.currentTarget.style.background = '#CC0000';
-                              e.currentTarget.style.color = '#FFFFFF';
+                              e.currentTarget.style.color = '#fff';
                             }
                           }}
                           onMouseLeave={e => {
                             if (!isLoading) {
-                              e.currentTarget.style.background = '#FFFFFF';
+                              e.currentTarget.style.background = '#fff';
                               e.currentTarget.style.color = '#CC0000';
                             }
                           }}
@@ -445,22 +440,22 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           {isLoading && !isStreaming && (
             <motion.div key="loading"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 24, gap: 16 }}
+              style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, gap: 10 }}
             >
-              <div style={{ width: 32, flexShrink: 0, paddingTop: 18, display: 'flex', justifyContent: 'center' }}>
-                <FlagIcon width={24} />
+              <div style={{ width: 28, flexShrink: 0, paddingTop: 18, display: 'flex', justifyContent: 'center' }}>
+                <FlagIcon />
               </div>
               <div>
-                <div style={{ fontSize: 10, fontWeight: 800, color: '#BBB', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#999', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   WargaCheck
                 </div>
                 <div style={{
-                  padding: '16px 20px', borderRadius: '4px 16px 16px 16px',
-                  background: '#F9F9F9', display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '12px 16px', borderRadius: '4px 12px 12px 12px',
+                  background: '#F7F7F7', display: 'flex', alignItems: 'center', gap: 5,
                 }}>
-                  <span className="dot-1" style={{ width: 6, height: 6, borderRadius: '50%', background: '#CC0000' }} />
-                  <span className="dot-2" style={{ width: 6, height: 6, borderRadius: '50%', background: '#CC0000' }} />
-                  <span className="dot-3" style={{ width: 6, height: 6, borderRadius: '50%', background: '#CC0000' }} />
+                  <span className="dot-1" style={{ width: 5, height: 5, borderRadius: '50%', background: '#CC0000', display: 'inline-block' }} />
+                  <span className="dot-2" style={{ width: 5, height: 5, borderRadius: '50%', background: '#CC0000', display: 'inline-block' }} />
+                  <span className="dot-3" style={{ width: 5, height: 5, borderRadius: '50%', background: '#CC0000', display: 'inline-block' }} />
                 </div>
               </div>
             </motion.div>
@@ -469,21 +464,21 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           {/* Streaming response */}
           {isStreaming && streamingText && (
             <motion.div key="streaming"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 24, gap: 16 }}
+              style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, gap: 10 }}
             >
-              <div style={{ width: 32, flexShrink: 0, paddingTop: 18, display: 'flex', justifyContent: 'center' }}>
-                <FlagIcon width={24} />
+              <div style={{ width: 28, flexShrink: 0, paddingTop: 18, display: 'flex', justifyContent: 'center' }}>
+                <FlagIcon width={22} />
               </div>
               <div style={{ maxWidth: '80%' }}>
-                <div style={{ fontSize: 10, fontWeight: 800, color: '#BBB', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#999', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   WargaCheck · sedang mengetik...
                 </div>
                 <div style={{
-                  padding: '20px 24px', borderRadius: '4px 20px 20px 20px',
-                  background: '#FFFFFF', color: '#1A1A1A', fontSize: 15, lineHeight: 1.7,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                  padding: '14px 16px', borderRadius: '4px 16px 16px 16px',
+                  background: '#fff', color: '#111', fontSize: 'clamp(13.5px, 3vw, 14.5px)', lineHeight: 1.65,
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
                   border: '1px solid #F0F0F0',
                 }}>
                   <div className="md">
@@ -491,10 +486,10 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
                   </div>
                   <span style={{
                     display: 'inline-block',
-                    width: 3,
-                    height: 18,
+                    width: 2,
+                    height: 16,
                     background: '#CC0000',
-                    marginLeft: 4,
+                    marginLeft: 2,
                     animation: 'blink 1s infinite',
                     verticalAlign: 'middle',
                   }} />
@@ -507,11 +502,12 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
 
       {/* ── Input bar ── */}
       <div style={{
-        padding: '24px',
-        background: '#FFFFFF',
+        borderTop: '1px solid #E8E8E8',
+        padding: 'clamp(12px, 3vw, 14px) clamp(16px, 4vw, 20px)',
+        background: '#fff',
         display: 'flex',
         alignItems: 'center',
-        gap: 12,
+        gap: 'clamp(8px, 2vw, 10px)',
       }}>
         {/* Document Scanner Button */}
         <button
@@ -520,72 +516,73 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           title="Scan dokumen dengan AI"
           style={{
             flexShrink: 0,
-            background: '#F9F9F9',
-            border: '1px solid #F0F0F0',
+            background: '#F7F7F7',
+            border: 'none',
             borderRadius: 8,
-            width: 48,
-            height: 48,
+            padding: 'clamp(10px, 2.2vw, 12px)',
             cursor: isLoading ? 'default' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'all 0.2s',
+            transition: 'background 0.15s',
             opacity: isLoading ? 0.5 : 1,
+            minWidth: 44,
+            minHeight: 44,
           }}
-          onMouseEnter={e => { if (!isLoading) e.currentTarget.style.borderColor = '#CC0000'; }}
-          onMouseLeave={e => { if (!isLoading) e.currentTarget.style.borderColor = '#F0F0F0'; }}
+          onMouseEnter={e => { if (!isLoading) e.currentTarget.style.background = '#E8E8E8'; }}
+          onMouseLeave={e => { if (!isLoading) e.currentTarget.style.background = '#F7F7F7'; }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CC0000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CC0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
             <circle cx="12" cy="13" r="4" />
           </svg>
         </button>
 
-        <div style={{ position: 'relative', flex: 1 }}>
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(input); } }}
-            placeholder="Tulis pertanyaan Anda di sini..."
-            disabled={isLoading}
-            style={{
-              width: '100%', fontSize: 15, fontFamily: 'inherit',
-              padding: '14px 18px',
-              border: '2px solid #F0F0F0', borderRadius: 8,
-              outline: 'none', background: '#FFFFFF', color: '#1A1A1A',
-              transition: 'all 0.2s',
-              height: 48,
-              fontWeight: 500,
-            }}
-            onFocus={e => e.target.style.borderColor = '#CC0000'}
-            onBlur={e => e.target.style.borderColor = '#F0F0F0'}
-          />
-        </div>
+        <input
+          ref={inputRef}
+          type="text"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(input); } }}
+          placeholder="Tanya prosedur, syarat, atau checklist berkas..."
+          disabled={isLoading}
+          style={{
+            flex: 1, fontSize: 'clamp(13px, 3vw, 14px)', fontFamily: 'Inter, sans-serif',
+            padding: 'clamp(11px, 2.5vw, 13px) clamp(12px, 2.8vw, 14px)',
+            border: '1.5px solid #E8E8E8', borderRadius: 8,
+            outline: 'none', background: '#fff', color: '#111',
+            transition: 'border-color 0.15s',
+            minHeight: 44,
+          }}
+          onFocus={e => e.target.style.borderColor = '#CC0000'}
+          onBlur={e => e.target.style.borderColor = '#E8E8E8'}
+        />
 
         <button
           onClick={() => handleSend(input)}
           disabled={!input.trim() || isLoading}
           style={{
             flexShrink: 0,
-            background: input.trim() && !isLoading ? '#CC0000' : '#EEE',
+            background: input.trim() && !isLoading ? '#CC0000' : '#E8E8E8',
             border: 'none', borderRadius: 8,
-            width: 48,
-            height: 48,
+            padding: 'clamp(10px, 2.2vw, 12px) clamp(14px, 3.2vw, 16px)',
             cursor: input.trim() && !isLoading ? 'pointer' : 'default',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all 0.2s',
+            transition: 'background 0.15s',
+            minWidth: 44,
+            minHeight: 44,
           }}
+          onMouseEnter={e => { if (input.trim() && !isLoading) e.currentTarget.style.background = '#A30000'; }}
+          onMouseLeave={e => { if (input.trim() && !isLoading) e.currentTarget.style.background = '#CC0000'; }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !isLoading ? '#fff' : '#bbb'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !isLoading ? '#fff' : '#bbb'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
         </button>
       </div>
 
       {/* Disclaimer */}
-      <p style={{ textAlign: 'center', fontSize: 11, color: '#BBB', paddingBottom: 24, margin: 0, fontWeight: 500 }}>
+      <p style={{ textAlign: 'center', fontSize: 'clamp(10px, 2.2vw, 11px)', color: '#ccc', padding: 'clamp(6px, 1.5vw, 8px) clamp(20px, 5vw, 24px) clamp(12px, 3vw, 14px)', margin: 0 }}>
         Informasi bersifat umum — konfirmasi ke instansi resmi setempat untuk kepastian.
       </p>
 
@@ -601,6 +598,5 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
         )}
       </AnimatePresence>
     </div>
-
   );
 }

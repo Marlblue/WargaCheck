@@ -57,22 +57,19 @@ export default function App() {
       <motion.header
         initial={false}
         animate={{
-          background: (view === 'welcome' && !isScrolled) ? 'rgba(255,255,255,0)' : 'rgba(255,255,255,0.96)',
-          backdropFilter: (view === 'welcome' && !isScrolled) ? 'blur(0px)' : 'blur(16px)',
-          WebkitBackdropFilter: (view === 'welcome' && !isScrolled) ? 'blur(0px)' : 'blur(16px)',
-          borderBottomColor: (view === 'welcome' && !isScrolled) ? 'rgba(0,0,0,0)' : '#F0F0F0',
-          boxShadow: isScrolled ? '0 4px 20px rgba(0,0,0,0.03)' : '0 0 0 rgba(0,0,0,0)',
+          boxShadow: isScrolled ? '0 2px 8px rgba(0,0,0,0.06)' : '0 0 0 rgba(0,0,0,0)',
         }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        transition={{ duration: 0.2 }}
         style={{
-          position: 'fixed', 
+          position: 'sticky', 
           top: 0, 
-          left: 0,
-          right: 0,
           zIndex: 100,
-          borderBottom: '1px solid transparent',
-          padding: '0 var(--px, 24px)',
-          height: 'clamp(64px, 8vw, 80px)',
+          background: view === 'welcome' ? 'rgba(255,255,255,0.95)' : '#fff',
+          backdropFilter: view === 'welcome' ? 'blur(12px)' : 'none',
+          WebkitBackdropFilter: view === 'welcome' ? 'blur(12px)' : 'none',
+          borderBottom: '1px solid #E8E8E8',
+          padding: '0 clamp(16px, 4vw, 24px)',
+          height: 'clamp(48px, 10vw, 52px)',
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
@@ -86,75 +83,99 @@ export default function App() {
           style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            gap: 12, 
+            gap: 'clamp(8px, 2vw, 10px)', 
             background: 'none', 
             border: 'none', 
             cursor: 'pointer', 
             padding: 0, 
+            minHeight: 44,
+            transition: 'opacity 0.15s',
           }}
+          onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
+          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
         >
-          <FlagIcon width={30} />
-          <span style={{ 
-            fontWeight: 900, 
-            fontSize: 'clamp(18px, 2.5vw, 22px)', 
-            letterSpacing: '-0.04em', 
-            color: '#1A1A1A',
-            textTransform: 'lowercase'
-          }}>
-            wargacheck<span style={{ color: '#CC0000' }}>.</span>
+          <FlagIcon width={26} />
+          <span style={{ fontWeight: 700, fontSize: 'clamp(14px, 3.2vw, 15px)', letterSpacing: '-0.03em', color: '#111' }}>
+            WargaCheck
           </span>
         </motion.button>
 
         {/* Right side */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1.5vw, 8px)' }}>
+          {/* Status */}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 'clamp(11px, 2.5vw, 12px)', color: '#999', fontWeight: 500 }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: '#22c55e', display: 'inline-block',
+            }} />
+            <span className="status-text" style={{ display: 'none' }}>Online</span>
+          </span>
+
           <AnimatePresence mode="wait">
             {view !== 'welcome' ? (
               <motion.button
                 key="home-btn"
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.15 }}
                 onClick={goHome}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 style={{
-                  fontSize: 13, 
-                  fontWeight: 700, 
-                  color: '#1A1A1A',
+                  fontSize: 'clamp(11px, 2.5vw, 12px)', 
+                  fontWeight: 500, 
+                  color: '#6B6B6B',
                   background: 'none', 
-                  border: 'none', 
-                  padding: '8px 16px', 
+                  border: '1px solid #E8E8E8', 
+                  borderRadius: 6,
+                  padding: 'clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 12px)', 
                   cursor: 'pointer',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em'
+                  transition: 'all 0.15s',
+                  minHeight: 36,
+                }}
+                onMouseEnter={e => { 
+                  e.currentTarget.style.borderColor = '#CC0000'; 
+                  e.currentTarget.style.color = '#CC0000'; 
+                }}
+                onMouseLeave={e => { 
+                  e.currentTarget.style.borderColor = '#E8E8E8'; 
+                  e.currentTarget.style.color = '#6B6B6B'; 
                 }}
               >
                 Beranda
               </motion.button>
-            ) : null}
+            ) : (
+              <motion.button
+                key="consult-btn"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.15 }}
+                onClick={() => startChat()}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                style={{
+                  fontSize: 'clamp(12px, 2.8vw, 13px)', 
+                  fontWeight: 600, 
+                  color: '#fff',
+                  background: '#CC0000',
+                  border: 'none', 
+                  borderRadius: 6,
+                  padding: 'clamp(7px, 1.8vw, 9px) clamp(14px, 3.2vw, 16px)', 
+                  cursor: 'pointer',
+                  transition: 'background 0.15s',
+                  minHeight: 36,
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#A30000'}
+                onMouseLeave={e => e.currentTarget.style.background = '#CC0000'}
+              >
+                Konsultasi
+              </motion.button>
+            )}
           </AnimatePresence>
-
-          <motion.button
-            onClick={() => (view === 'chat' ? goHome() : startChat())}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-              fontSize: 12, 
-              fontWeight: 800, 
-              color: '#fff',
-              background: '#CC0000',
-              border: 'none', 
-              borderRadius: 4,
-              padding: '12px 24px', 
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              boxShadow: '0 4px 12px rgba(204,0,0,0.15)'
-            }}
-          >
-            {view === 'chat' ? 'Tutup Chat' : 'Konsultasi'}
-          </motion.button>
         </div>
       </motion.header>
-
 
       {/* ── Main ── */}
       <main style={{ 
