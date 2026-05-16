@@ -48,7 +48,7 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
       // Convert to base64
       const base64 = await fileToBase64(file);
       const mimeType = file.type || 'image/jpeg';
-      
+
       // Call real Gemini Vision API
       const result = await scanDocument(base64, mimeType);
       setScanResult(result);
@@ -147,8 +147,8 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
               gap: 8,
             }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CC0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-                <circle cx="12" cy="13" r="4"/>
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                <circle cx="12" cy="13" r="4" />
               </svg>
               Scan Dokumen AI
             </h3>
@@ -179,7 +179,7 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
             onMouseLeave={e => e.currentTarget.style.background = '#F7F7F7'}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M1 1l12 12M13 1L1 13" stroke="#111" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M1 1l12 12M13 1L1 13" stroke="#111" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
         </div>
@@ -220,9 +220,9 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
                   }}
                 >
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#CC0000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 16px', display: 'block' }}>
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
                   <p style={{ fontSize: 'clamp(14px, 3.5vw, 16px)', fontWeight: 600, color: '#CC0000', margin: '0 0 clamp(6px, 1.5vw, 8px)' }}>
                     Upload Foto Dokumen
@@ -247,13 +247,13 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
                     Powered by Gemini AI
                   </p>
                   {[
-                    { icon: '🔍', text: 'Identifikasi jenis dokumen otomatis' },
-                    { icon: '✅', text: 'Cek kelengkapan dan keterbacaan' },
-                    { icon: '📋', text: 'Rekomendasi langkah selanjutnya' },
+                    'Identifikasi jenis dokumen otomatis',
+                    'Cek kelengkapan dan keterbacaan',
+                    'Rekomendasi langkah selanjutnya',
                   ].map((feature, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 'clamp(10px, 2.5vw, 12px)', padding: 'clamp(7px, 1.8vw, 8px) 0', fontSize: 'clamp(13px, 3vw, 14px)', color: '#333' }}>
-                      <span style={{ fontSize: 'clamp(16px, 3.5vw, 18px)' }}>{feature.icon}</span>
-                      <span>{feature.text}</span>
+                    <div key={i} style={{ padding: 'clamp(7px, 1.8vw, 8px) 0', fontSize: 'clamp(13px, 3vw, 14px)', color: '#333' }}>
+                      <span style={{ color: '#CC0000', marginRight: '8px' }}>•</span>
+                      <span>{feature}</span>
                     </div>
                   ))}
                 </div>

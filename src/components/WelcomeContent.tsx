@@ -18,10 +18,10 @@ const GLOBAL_STYLE = `
   * { box-sizing: border-box; }
   @media (max-width: 640px) {
     .hero-stats { gap: 24px !important; }
-    .persona-grid { grid-template-columns: 1fr !important; gap: 2px !important; }
+    .persona-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
     .how-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
     .links-grid { grid-template-columns: 1fr !important; }
-    .link-item { border-right: none !important; padding-left: 0 !important; border-bottom: 1px solid rgba(240,237,232,0.06) !important; padding-bottom: 20px !important; }
+    .link-item { border-right: none !important; padding-left: 0 !important; border-bottom: 1px solid #E8E8E8 !important; padding-bottom: 20px !important; }
     .topic-tag { display: none !important; }
     .footer-inner { flex-direction: column !important; align-items: flex-start !important; }
     .footer-disclaimer { text-align: left !important; }
@@ -76,7 +76,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '14%']);
 
   return (
-    <div style={{ background: '#0C0C0C', color: '#F0EDE8', fontFamily: "'Georgia', 'Times New Roman', serif", overflowX: 'hidden' }}>
+    <div style={{ background: '#FAFAFA', color: '#111', fontFamily: 'Inter, sans-serif', overflowX: 'hidden' }}>
       <style>{GLOBAL_STYLE}</style>
 
       {/* ─── HERO — full viewport with parallax photo ─── */}
@@ -88,50 +88,10 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
           minHeight: 560,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'flex-end',
+          justifyContent: 'center',
           overflow: 'hidden',
         }}
       >
-        {/* ── Parallax photo layer ── */}
-        <motion.div
-          style={{
-            position: 'absolute', inset: '-10% 0',
-            scale: imgScale,
-            zIndex: 0,
-          }}
-        >
-          <img
-            src={imgSrc}
-            onError={() => setImgSrc(HERO_IMAGE_ALT)}
-            alt=""
-            aria-hidden="true"
-            style={{
-              width: '100%', height: '100%',
-              objectFit: 'cover', objectPosition: 'center 30%',
-              display: 'block',
-            }}
-          />
-        </motion.div>
-
-        {/* ── Gradient overlays: dark vignette bottom + subtle top ── */}
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 1,
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.05) 20%, rgba(0,0,0,0.1) 35%, rgba(0,0,0,0.6) 65%, rgba(8,8,8,0.97) 100%)',
-        }} />
-        {/* Red tint accent — bottom left corner */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, width: '50%', height: '60%', zIndex: 1,
-          background: 'radial-gradient(ellipse at 0% 100%, rgba(160,0,0,0.18) 0%, transparent 65%)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* ── Grain ── */}
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          opacity: 0.035, mixBlendMode: 'overlay',
-        }} />
-
         {/* ── Red vertical accent line ── */}
         <motion.div
           initial={{ scaleY: 0 }}
@@ -141,12 +101,12 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             position: 'absolute',
             left: 'clamp(20px, 3.5vw, 48px)',
             top: '15%', bottom: '12%', width: 1,
-            background: 'linear-gradient(to bottom, transparent, #CC0000 20%, #CC0000 80%, transparent)',
+            background: '#CC0000',
             transformOrigin: 'top', zIndex: 3,
           }}
         />
 
-        {/* ── Inline nav — blends into hero ── */}
+        {/* ── Inline nav — clean ── */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -156,18 +116,19 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             padding: 'clamp(20px, 3vw, 28px) var(--px)',
             paddingLeft: 'clamp(44px, 6.5vw, 88px)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)',
+            background: 'transparent',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           </div>
-          <span style={{ fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', color: 'rgba(240,237,232,0.45)' }}>
+          <span style={{ fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif', color: '#6B6B6B' }}>
             AI Asisten Kependudukan
           </span>
         </motion.div>
 
         {/* ── Hero text content ── */}
         <motion.div
+          className="hero-content"
           style={{
             opacity: heroOpacity, y: heroY,
             position: 'relative', zIndex: 5,
@@ -183,26 +144,30 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             transition={{ delay: 0.65, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             style={{
               fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase',
-              fontFamily: 'system-ui, sans-serif', color: '#CC0000',
+              fontFamily: 'Inter, sans-serif', color: '#CC0000',
               margin: '0 0 clamp(14px, 2.5vw, 24px)', fontWeight: 600,
             }}
           >
-            Checklist Personal · Estimasi Waktu & Biaya
+
           </motion.p>
 
           {/* Headline — 3-line mask reveal */}
           {(['Tahu dokumen', 'apa yang dibawa,', 'sebelum berangkat.'] as const).map((line, i) => (
-            <div key={line} style={{ overflow: 'hidden', marginBottom: i < 2 ? 4 : 'clamp(28px, 4.5vw, 48px)' }}>
+            <div key={line} style={{
+              overflow: 'hidden',
+              fontSize: 'clamp(36px, 7.5vw, 90px)',
+              paddingBottom: '0.2em',
+              marginBottom: i < 2 ? '-0.2em' : 'clamp(28px, 4.5vw, 48px)'
+            }}>
               <motion.h1
-                initial={{ y: '105%' }}
+                initial={{ y: '120%' }}
                 animate={{ y: 0 }}
                 transition={{ delay: 0.8 + i * 0.11, duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 style={{
-                  fontSize: 'clamp(36px, 7.5vw, 90px)',
-                  fontWeight: 400, lineHeight: 0.96, letterSpacing: '-0.03em', margin: 0,
-                  color: i === 2 ? '#CC0000' : '#F0EDE8',
+                  fontSize: 'inherit',
+                  fontWeight: 400, lineHeight: 1, letterSpacing: '-0.03em', margin: 0,
+                  color: i === 2 ? '#CC0000' : '#111',
                   fontStyle: i === 1 ? 'italic' : 'normal',
-                  textShadow: '0 2px 32px rgba(0,0,0,0.6)',
                 }}
               >
                 {line}
@@ -224,7 +189,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
                 padding: 'clamp(11px, 1.8vw, 15px) clamp(20px, 3vw, 36px)',
                 borderRadius: 2, cursor: 'pointer',
                 fontSize: 'clamp(12px, 1.3vw, 14px)', letterSpacing: '0.06em', textTransform: 'uppercase',
-                fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                fontFamily: 'Inter, sans-serif', fontWeight: 700,
                 transition: 'background 0.18s, transform 0.18s',
                 boxShadow: '0 4px 24px rgba(200,0,0,0.35)',
               }}
@@ -236,19 +201,17 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             <button
               onClick={onOpenBerkasChecker}
               style={{
-                background: 'rgba(240,237,232,0.08)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                color: 'rgba(240,237,232,0.8)',
-                border: '1px solid rgba(240,237,232,0.22)',
+                background: '#fff',
+                color: '#111',
+                border: '1px solid #E8E8E8',
                 padding: 'clamp(11px, 1.8vw, 15px) clamp(20px, 3vw, 36px)',
                 borderRadius: 2, cursor: 'pointer',
                 fontSize: 'clamp(12px, 1.3vw, 14px)', letterSpacing: '0.06em', textTransform: 'uppercase',
-                fontFamily: 'system-ui, sans-serif', fontWeight: 600,
+                fontFamily: 'Inter, sans-serif', fontWeight: 600,
                 transition: 'all 0.18s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(240,237,232,0.15)'; e.currentTarget.style.color = '#F0EDE8'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(240,237,232,0.08)'; e.currentTarget.style.color = 'rgba(240,237,232,0.8)'; }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#FAFAFA'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#fff'; }}
             >
               Cek Kelengkapan Berkas
             </button>
@@ -268,8 +231,8 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
               { v: '24/7', l: 'Selalu tersedia' },
             ].map(s => (
               <div key={s.l}>
-                <div style={{ fontSize: 'clamp(20px, 2.8vw, 26px)', fontWeight: 400, color: '#F0EDE8', letterSpacing: '-0.025em', lineHeight: 1 }}>{s.v}</div>
-                <div style={{ fontSize: 10, color: 'rgba(240,237,232,0.42)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', marginTop: 4 }}>{s.l}</div>
+                <div style={{ fontSize: 'clamp(20px, 2.8vw, 26px)', fontWeight: 400, color: '#111', letterSpacing: '-0.025em', lineHeight: 1 }}>{s.v}</div>
+                <div style={{ fontSize: 10, color: '#6B6B6B', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif', marginTop: 4 }}>{s.l}</div>
               </div>
             ))}
           </motion.div>
@@ -277,13 +240,13 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
       </section>
 
       {/* ─── TOPICS ─── */}
-      <section style={{ ...sectionPad, background: '#F4F1EC', color: '#1A1A1A', borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+      <section style={{ ...sectionPad, background: '#fff', color: '#1A1A1A', borderTop: '1px solid #E8E8E8' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'clamp(24px, 4vw, 44px)' }}>
-            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
               Pilih Topik
             </span>
-            <div style={{ flex: 1, height: '0.5px', background: 'rgba(0,0,0,0.14)' }} />
+            <div style={{ flex: 1, height: '0.5px', background: '#E8E8E8' }} />
           </div>
 
           {topics.map((t, i) => (
@@ -299,7 +262,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 width: '100%', padding: 'clamp(14px, 2.2vw, 20px) 0',
-                background: 'none', border: 'none', borderBottom: '0.5px solid rgba(0,0,0,0.1)',
+                background: 'none', border: 'none', borderBottom: '1px solid #F0F0F0',
                 cursor: 'pointer', textAlign: 'left',
                 transition: 'padding-left 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
                 paddingLeft: hoveredTopic === i ? 10 : 0,
@@ -311,7 +274,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
                   style={{
                     fontSize: 10, color: hoveredTopic === i ? '#CC0000' : 'rgba(0,0,0,0.3)',
                     letterSpacing: '0.1em', textTransform: 'uppercase',
-                    fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                    fontFamily: 'Inter, sans-serif', fontWeight: 700,
                     transition: 'color 0.18s', flexShrink: 0, width: 88,
                   }}
                 >
@@ -320,7 +283,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
                 <span style={{
                   fontSize: 'clamp(19px, 3.2vw, 32px)',
                   fontWeight: 400, letterSpacing: '-0.025em',
-                  color: hoveredTopic === i ? '#CC0000' : '#1A1A1A',
+                  color: hoveredTopic === i ? '#CC0000' : '#444',
                   transition: 'color 0.18s', lineHeight: 1.15,
                 }}>
                   {t.label}
@@ -340,18 +303,18 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
       </section>
 
       {/* ─── PERSONAS ─── */}
-      <section style={{ ...sectionPad, background: '#111' }}>
+      <section style={{ ...sectionPad, background: '#FAFAFA' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'clamp(24px, 4vw, 52px)' }}>
-            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
               Situasi Kamu
             </span>
-            <div style={{ flex: 1, height: '0.5px', background: 'rgba(240,237,232,0.1)' }} />
+            <div style={{ flex: 1, height: '0.5px', background: '#E8E8E8' }} />
           </div>
 
           <div
             className="persona-grid"
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1px', background: 'rgba(240,237,232,0.06)', borderRadius: 2, overflow: 'hidden' }}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', borderRadius: 2, overflow: 'hidden' }}
           >
             {personas.map((p, i) => (
               <motion.button
@@ -364,39 +327,41 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
                 onMouseEnter={() => setHoveredPersona(i)}
                 onMouseLeave={() => setHoveredPersona(null)}
                 style={{
-                  background: hoveredPersona === i ? '#CC0000' : '#111',
-                  border: 'none',
+                  background: hoveredPersona === i ? '#FFF5F5' : '#fff',
+                  border: hoveredPersona === i ? '1px solid #CC0000' : '1px solid #E8E8E8',
+                  borderRadius: '12px',
+                  boxShadow: hoveredPersona === i ? '0 4px 12px rgba(204,0,0,0.08)' : '0 2px 6px rgba(0,0,0,0.02)',
                   padding: 'clamp(28px, 4vw, 44px) clamp(22px, 3vw, 36px)',
                   cursor: 'pointer', textAlign: 'left',
-                  transition: 'background 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
+                  transition: 'all 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
                   display: 'flex', flexDirection: 'column',
                 }}
               >
                 <div style={{
                   fontSize: 10, letterSpacing: '0.13em', textTransform: 'uppercase',
-                  fontFamily: 'system-ui, sans-serif', fontWeight: 700,
-                  color: hoveredPersona === i ? 'rgba(255,255,255,0.5)' : 'rgba(240,237,232,0.25)',
+                  fontFamily: 'Inter, sans-serif', fontWeight: 700,
+                  color: hoveredPersona === i ? '#CC0000' : 'rgba(204,0,0,0.5)',
                   marginBottom: 18, transition: 'color 0.28s',
                 }}>
                   {p.num}
                 </div>
                 <div style={{
                   fontSize: 'clamp(21px, 2.6vw, 28px)', fontWeight: 400, letterSpacing: '-0.025em',
-                  color: '#F0EDE8', lineHeight: 1.1, marginBottom: 10,
+                  color: '#111', lineHeight: 1.1, marginBottom: 10,
                 }}>
                   {p.label}
                 </div>
                 <div style={{
-                  fontSize: 13, lineHeight: 1.6, fontFamily: 'system-ui, sans-serif',
-                  color: hoveredPersona === i ? 'rgba(255,255,255,0.82)' : 'rgba(240,237,232,0.42)',
+                  fontSize: 13, lineHeight: 1.6, fontFamily: 'Inter, sans-serif',
+                  color: '#6B6B6B',
                   transition: 'color 0.28s', marginBottom: 28, flex: 1,
                 }}>
                   {p.detail}
                 </div>
                 <div style={{
                   fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase',
-                  fontFamily: 'system-ui, sans-serif', fontWeight: 700,
-                  color: hoveredPersona === i ? '#fff' : '#CC0000',
+                  fontFamily: 'Inter, sans-serif', fontWeight: 700,
+                  color: '#CC0000',
                   display: 'flex', alignItems: 'center', gap: 8,
                   transition: 'color 0.28s',
                 }}>
@@ -412,13 +377,13 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
       </section>
 
       {/* ─── HOW IT WORKS ─── */}
-      <section style={{ ...sectionPad, background: '#F4F1EC', color: '#1A1A1A' }}>
+      <section style={{ ...sectionPad, background: '#fff', color: '#1A1A1A' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'clamp(24px, 4vw, 52px)' }}>
-            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
               Cara Kerja
             </span>
-            <div style={{ flex: 1, height: '0.5px', background: 'rgba(0,0,0,0.12)' }} />
+            <div style={{ flex: 1, height: '0.5px', background: '#E8E8E8' }} />
           </div>
 
           <div
@@ -428,14 +393,14 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             <div>
               <h2 style={{
                 fontSize: 'clamp(28px, 4.2vw, 50px)', fontWeight: 400, letterSpacing: '-0.03em',
-                lineHeight: 1.08, margin: '0 0 18px',
+                lineHeight: 1.08, margin: '0 0 18px', color: '#111',
               }}>
                 Tiga langkah,<br />
                 <em>satu kali datang.</em>
               </h2>
               <p style={{
-                fontSize: 15, color: 'rgba(0,0,0,0.52)', lineHeight: 1.7,
-                fontFamily: 'system-ui, sans-serif', margin: 0, maxWidth: 320,
+                fontSize: 15, color: '#6B6B6B', lineHeight: 1.7,
+                fontFamily: 'Inter, sans-serif', margin: 0, maxWidth: 320,
               }}>
                 AI analisis situasi kamu secara personal dan buatkan checklist yang sesuai — supaya tidak perlu bolak-balik ke kantor.
               </p>
@@ -455,15 +420,15 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
                   transition={{ delay: i * 0.1, duration: 0.5 }}
                   style={{
                     display: 'flex', gap: 18, padding: 'clamp(16px, 2.5vw, 26px) 0',
-                    borderBottom: i < 2 ? '0.5px solid rgba(0,0,0,0.1)' : 'none',
+                    borderBottom: i < 2 ? '1px solid #F0F0F0' : 'none',
                   }}
                 >
-                  <span style={{ fontSize: 10, color: '#CC0000', fontWeight: 700, letterSpacing: '0.07em', fontFamily: 'system-ui, sans-serif', paddingTop: 4, minWidth: 20, flexShrink: 0 }}>
+                  <span style={{ fontSize: 10, color: '#CC0000', fontWeight: 700, letterSpacing: '0.07em', fontFamily: 'Inter, sans-serif', paddingTop: 4, minWidth: 20, flexShrink: 0 }}>
                     {s.n}
                   </span>
                   <div>
-                    <p style={{ fontSize: 15, fontWeight: 400, color: '#1A1A1A', margin: '0 0 4px', lineHeight: 1.3 }}>{s.t}</p>
-                    <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.48)', margin: 0, fontFamily: 'system-ui, sans-serif', lineHeight: 1.55 }}>{s.d}</p>
+                    <p style={{ fontSize: 15, fontWeight: 400, color: '#111', margin: '0 0 4px', lineHeight: 1.3 }}>{s.t}</p>
+                    <p style={{ fontSize: 13, color: '#6B6B6B', margin: 0, fontFamily: 'Inter, sans-serif', lineHeight: 1.55 }}>{s.d}</p>
                   </div>
                 </motion.div>
               ))}
@@ -473,13 +438,13 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
       </section>
 
       {/* ─── LINKS + FOOTER ─── */}
-      <section style={{ ...sectionPad, background: '#0C0C0C', borderTop: '0.5px solid rgba(240,237,232,0.07)' }}>
+      <section style={{ ...sectionPad, background: '#FAFAFA', borderTop: '1px solid #E8E8E8' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'clamp(20px, 3.5vw, 36px)' }}>
-            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 10, color: '#CC0000', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif', fontWeight: 700, whiteSpace: 'nowrap' }}>
               Tautan Resmi
             </span>
-            <div style={{ flex: 1, height: '0.5px', background: 'rgba(240,237,232,0.08)' }} />
+            <div style={{ flex: 1, height: '0.5px', background: '#E8E8E8' }} />
           </div>
 
           <div
@@ -501,7 +466,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
                   display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                   padding: 'clamp(14px, 2.2vw, 22px)',
                   paddingLeft: i === 0 ? 0 : 'clamp(14px, 2.2vw, 22px)',
-                  borderRight: i < 2 ? '0.5px solid rgba(240,237,232,0.07)' : 'none',
+                  borderRight: i < 2 ? '1px solid #E8E8E8' : 'none',
                   textDecoration: 'none', transition: 'opacity 0.18s',
                   gap: 16, minHeight: 88,
                 }}
@@ -509,8 +474,8 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
               >
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 400, color: '#F0EDE8', margin: '0 0 5px', letterSpacing: '-0.01em', lineHeight: 1.3 }}>{link.label}</p>
-                  <p style={{ fontSize: 12, color: 'rgba(240,237,232,0.38)', margin: 0, fontFamily: 'system-ui, sans-serif', lineHeight: 1.55 }}>{link.desc}</p>
+                  <p style={{ fontSize: 14, fontWeight: 400, color: '#111', margin: '0 0 5px', letterSpacing: '-0.01em', lineHeight: 1.3 }}>{link.label}</p>
+                  <p style={{ fontSize: 12, color: '#6B6B6B', margin: 0, fontFamily: 'Inter, sans-serif', lineHeight: 1.55 }}>{link.desc}</p>
                 </div>
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style={{ color: '#CC0000' }}>
                   <path d="M2 10L10 2M10 2H5M10 2v5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -523,16 +488,16 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             className="footer-inner"
             style={{
               marginTop: 'clamp(32px, 5vw, 60px)', paddingTop: 22,
-              borderTop: '0.5px solid rgba(240,237,232,0.07)',
+              borderTop: '1px solid #E8E8E8',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12,
             }}
           >
-            <span style={{ fontSize: 12, color: 'rgba(240,237,232,0.22)', fontFamily: 'system-ui, sans-serif' }}>
-              © 2026 WargaCheck — <strong style={{ color: 'rgba(240,237,232,0.38)', fontWeight: 400 }}>#JuaraVibeCoding</strong>
+            <span style={{ fontSize: 12, color: '#999', fontFamily: 'Inter, sans-serif' }}>
+              © 2026 WargaCheck — <strong style={{ color: '#6B6B6B', fontWeight: 400 }}>#JuaraVibeCoding</strong>
             </span>
             <span
               className="footer-disclaimer"
-              style={{ fontSize: 12, color: 'rgba(240,237,232,0.18)', fontFamily: 'system-ui, sans-serif', maxWidth: 380, textAlign: 'right', lineHeight: 1.55 }}
+              style={{ fontSize: 12, color: '#999', fontFamily: 'Inter, sans-serif', maxWidth: 380, textAlign: 'right', lineHeight: 1.55 }}
             >
               Informasi bersifat umum. Selalu konfirmasi ke instansi resmi setempat.
             </span>
