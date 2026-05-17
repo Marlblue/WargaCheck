@@ -8,17 +8,41 @@ declare global {
   }
 }
 
-export function useSpeech() {
+interface UseSpeechReturn {
+  isListening: boolean;
+  startListening: (onResult: (text: string) => void) => void;
+  stopListening: () => void;
+  isPlaying: boolean;
+  activeMessageId: string | null;
+  speak: (text: string, messageId: string) => void;
+  stopSpeaking: () => void;
+  /** Non-blocking error message (replaces native alert). */
+  error: string | null;
+  clearError: () => void;
+}
+
+export function useSpeech(): UseSpeechReturn {
   const [isListening, setIsListening] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearError = useCallback(() => setError(null), []);
+
+  /** Show an error that auto-clears after 4 seconds. */
+  const showError = useCallback((msg: string) => {
+    setError(msg);
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    errorTimerRef.current = setTimeout(() => setError(null), 4000);
+  }, []);
 
   // --- Speech to Text (Mendengarkan Suara) ---
   const startListening = useCallback((onResult: (text: string) => void) => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('Browser Anda tidak mendukung fitur input suara. Gunakan Google Chrome.');
+      showError('Browser Anda tidak mendukung fitur input suara. Gunakan Google Chrome.');
       return;
     }
 
@@ -36,6 +60,11 @@ export function useSpeech() {
 
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error', event.error);
+      if (event.error === 'not-allowed') {
+        showError('Izin mikrofon ditolak. Aktifkan di pengaturan browser.');
+      } else if (event.error === 'no-speech') {
+        showError('Tidak ada suara terdeteksi. Coba lagi.');
+      }
       setIsListening(false);
     };
 
@@ -43,7 +72,7 @@ export function useSpeech() {
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, []);
+  }, [showError]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
@@ -61,7 +90,7 @@ export function useSpeech() {
 
   const speak = useCallback((text: string, messageId: string) => {
     if (!window.speechSynthesis) {
-      alert('Browser Anda tidak mendukung fitur suara.');
+      showError('Browser Anda tidak mendukung fitur suara.');
       return;
     }
 
@@ -95,13 +124,14 @@ export function useSpeech() {
     };
 
     window.speechSynthesis.speak(utterance);
-  }, [stopSpeaking]);
+  }, [stopSpeaking, showError]);
 
   // Clean up saat komponen di-unmount
   useEffect(() => {
     return () => {
       stopSpeaking();
       if (recognitionRef.current) recognitionRef.current.stop();
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     };
   }, [stopSpeaking]);
 
@@ -112,6 +142,8 @@ export function useSpeech() {
     isPlaying,
     activeMessageId,
     speak,
-    stopSpeaking
+    stopSpeaking,
+    error,
+    clearError,
   };
 }

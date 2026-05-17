@@ -2,15 +2,34 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTheme } from './hooks/useTheme';
 import WelcomeContent from './components/WelcomeContent';
-import Chat from './components/Chat';
-import BerkasChecker from './components/BerkasChecker';
 import LogoIcon from './components/shared/LogoIcon';
 
+// Lazy load heavy components for better initial load performance
+const Chat = lazy(() => import('./components/Chat'));
+const BerkasChecker = lazy(() => import('./components/BerkasChecker'));
+
 type View = 'welcome' | 'chat' | 'berkas';
+
+/** Spinner fallback for lazy-loaded components */
+function LoadingFallback() {
+  return (
+    <div style={{
+      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexDirection: 'column', gap: 16,
+    }}>
+      <div style={{
+        width: 32, height: 32, borderRadius: '50%',
+        border: '2.5px solid var(--border)', borderTopColor: 'var(--primary)',
+        animation: 'spin 0.8s linear infinite',
+      }} />
+      <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>Memuat...</span>
+    </div>
+  );
+}
 
 export default function App() {
   const [view, setView] = useState<View>('welcome');
@@ -45,10 +64,10 @@ export default function App() {
     }}>
 
       {/* ── Floating Pill Navbar ── */}
-      <nav className="navbar" style={{ marginBottom: view === 'welcome' ? 0 : 8 }}>
+      <nav className="navbar" role="navigation" aria-label="Navigasi utama" style={{ marginBottom: view === 'welcome' ? 0 : 8 }}>
         <div className="navbar-inner">
           {/* Logo */}
-          <button className="nav-logo" onClick={goHome}>
+          <button className="nav-logo" onClick={goHome} aria-label="Kembali ke beranda WargaCheck">
             <LogoIcon size={24} />
             <span>WargaCheck</span>
           </button>
@@ -56,16 +75,21 @@ export default function App() {
           {/* Actions */}
           <div className="nav-actions">
             {/* Status dot */}
-            <span className="status-dot" style={{ marginRight: 4 }} />
+            <span className="status-dot" style={{ marginRight: 4 }} aria-label="Status: online" role="status" />
 
             {/* Theme toggle */}
-            <button className="nav-btn-icon" onClick={toggleTheme} title={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}>
+            <button
+              className="nav-btn-icon"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
+              title={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}
+            >
               {theme === 'dark' ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                 </svg>
               ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                 </svg>
               )}
@@ -81,6 +105,7 @@ export default function App() {
                   transition={{ duration: 0.15 }}
                   className="nav-btn nav-btn-ghost"
                   onClick={goHome}
+                  aria-label="Kembali ke beranda"
                 >
                   ← Beranda
                 </motion.button>
@@ -93,6 +118,7 @@ export default function App() {
                   transition={{ duration: 0.15 }}
                   className="nav-btn nav-btn-primary"
                   onClick={() => startChat()}
+                  aria-label="Mulai konsultasi AI"
                 >
                   Konsultasi
                 </motion.button>
@@ -109,7 +135,7 @@ export default function App() {
         flexDirection: 'column',
         overflow: 'hidden',
         position: 'relative',
-      }}>
+      }} role="main">
         <AnimatePresence mode="wait">
           {view === 'welcome' ? (
             <motion.div
@@ -131,7 +157,9 @@ export default function App() {
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
             >
-              <Chat initialMessage={initialPrompt} onBack={goHome} />
+              <Suspense fallback={<LoadingFallback />}>
+                <Chat initialMessage={initialPrompt} onBack={goHome} />
+              </Suspense>
             </motion.div>
           ) : (
             <motion.div
@@ -142,7 +170,9 @@ export default function App() {
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
             >
-              <BerkasChecker onBack={goHome} />
+              <Suspense fallback={<LoadingFallback />}>
+                <BerkasChecker onBack={goHome} />
+              </Suspense>
             </motion.div>
           )}
         </AnimatePresence>

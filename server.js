@@ -89,6 +89,19 @@ function createRateLimiter(endpoint) {
   };
 }
 
+// ── CSRF Protection (origin check for mutating requests) ──
+function csrfProtection(req, res, next) {
+  if (process.env.NODE_ENV !== 'production') return next();
+  if (req.method === 'GET' || req.method === 'HEAD') return next();
+  const origin = req.get('origin') || req.get('referer') || '';
+  const allowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o));
+  if (!allowed) {
+    return res.status(403).json({ error: 'Forbidden: invalid origin.' });
+  }
+  next();
+}
+app.use(csrfProtection);
+
 // ── Input Validation ──
 function validateMessage(message) {
   if (!message || typeof message !== 'string') {

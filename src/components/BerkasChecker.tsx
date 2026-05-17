@@ -21,7 +21,7 @@ interface BerkasCheckerProps { onBack: () => void; }
 
 function OptionButton({ selected, label, onClick }: { selected: boolean; label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} role="radio" aria-checked={selected} aria-label={label} style={{
       display: 'flex', alignItems: 'center', gap: 10,
       padding: '10px 14px', background: 'none', border: 'none',
       borderBottom: '1px solid var(--border-soft)', cursor: 'pointer',

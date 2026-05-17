@@ -72,6 +72,9 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
         padding: 'clamp(16px, 4vw, 24px)',
       }}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Scan Dokumen AI"
     >
       <motion.div
         initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
@@ -123,7 +126,7 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
                   <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--primary)', margin: '0 0 8px' }}>Upload Foto Dokumen</p>
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>KTP, KK, Akta, SKCK, atau dokumen lainnya</p>
                 </div>
-                <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} style={{ display: 'none' }} />
+                <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} style={{ display: 'none' }} aria-label="Pilih foto dokumen untuk di-scan" />
                 <div style={{ marginTop: 24 }}>
                   <p className="section-label">Powered by Gemini AI</p>
                   {['Identifikasi jenis dokumen otomatis', 'Cek kelengkapan dan keterbacaan', 'Rekomendasi langkah selanjutnya'].map((f, i) => (
