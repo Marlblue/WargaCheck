@@ -466,9 +466,11 @@ function BerkasMarkdown({
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        li: ({ children, node, ...props }) => {
-          const text = String(children);
-          const isCheckbox = text.includes('[ ]') || text.includes('[x]');
+        li: ({ children, node, className, ...props }) => {
+          const text = Array.isArray(children)
+            ? children.map(c => typeof c === 'string' ? c : '').join('')
+            : String(children);
+          const isCheckbox = className?.includes('task-list-item') || text.includes('[ ]') || text.includes('[x]');
 
           if (isCheckbox) {
             checkboxCounter++;

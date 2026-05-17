@@ -298,3 +298,9 @@ input:focus-visible, textarea:focus-visible {
   header, footer, .disclaimer { display: none !important; }
   .berkas-result { border: none !important; box-shadow: none !important; }
 }
+
+@keyframes micPulse {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+}
+

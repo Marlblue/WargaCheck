@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { sendMessage } from '../services/gemini';
 import FlagIcon from './shared/FlagIcon';
 import DocumentScanner from './DocumentScanner';
+import { useSpeech } from '../hooks/useSpeech';
 
 interface Message {
   id: string;
@@ -35,6 +36,7 @@ const QUICK_REPLIES = [
 ];
 
 export default function Chat({ initialMessage, onBack }: ChatProps) {
+  const { isListening, startListening, stopListening, isPlaying, activeMessageId, speak, stopSpeaking } = useSpeech();
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -349,14 +351,47 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
                 )}
 
                 <div style={{ maxWidth: isUser ? '85%' : '80%' }}>
-                  {/* Role label */}
+                  {/* Role label & Audio Button */}
                   <div style={{
-                    fontSize: 'clamp(10px, 2.2vw, 11px)', fontWeight: 600, color: '#999',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: isUser ? 'flex-end' : 'space-between',
                     marginBottom: 'clamp(3px, 1vw, 4px)',
-                    textAlign: isUser ? 'right' : 'left',
-                    textTransform: 'uppercase', letterSpacing: '0.06em',
                   }}>
-                    {isUser ? 'Anda' : 'WargaCheck'} · {fmt(msg.timestamp)}
+                    <div style={{
+                      fontSize: 'clamp(10px, 2.2vw, 11px)', fontWeight: 600, color: '#999',
+                      textTransform: 'uppercase', letterSpacing: '0.06em',
+                    }}>
+                      {isUser ? 'Anda' : 'WargaCheck'} · {fmt(msg.timestamp)}
+                    </div>
+                    
+                    {!isUser && (
+                      <button
+                        onClick={() => {
+                          const isCurrentlyPlayingThis = isPlaying && activeMessageId === msg.id;
+                          if (isCurrentlyPlayingThis) stopSpeaking();
+                          else speak(msg.text, msg.id);
+                        }}
+                        style={{
+                          background: 'none', border: 'none', padding: '4px', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: (isPlaying && activeMessageId === msg.id) ? '#CC0000' : '#aaa',
+                          transition: 'color 0.2s',
+                        }}
+                        title={(isPlaying && activeMessageId === msg.id) ? "Hentikan Suara" : "Dengarkan"}
+                      >
+                        {(isPlaying && activeMessageId === msg.id) ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="6" width="12" height="12" />
+                          </svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                          </svg>
+                        )}
+                      </button>
+                    )}
                   </div>
 
                   {/* Bubble */}
@@ -536,6 +571,51 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CC0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
             <circle cx="12" cy="13" r="4" />
+          </svg>
+        </button>
+
+        {/* Voice Input Button */}
+        <button
+          onClick={() => {
+            if (isListening) {
+              stopListening();
+            } else {
+              startListening((text) => {
+                setInput(prev => prev ? prev + ' ' + text : text);
+              });
+            }
+          }}
+          disabled={isLoading}
+          title={isListening ? "Sedang mendengarkan..." : "Gunakan suara"}
+          style={{
+            flexShrink: 0,
+            background: isListening ? '#FFEAEA' : '#F7F7F7',
+            border: 'none',
+            borderRadius: 8,
+            padding: 'clamp(10px, 2.2vw, 12px)',
+            cursor: isLoading ? 'default' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s',
+            opacity: isLoading ? 0.5 : 1,
+            minWidth: 44,
+            minHeight: 44,
+            position: 'relative',
+          }}
+        >
+          {isListening && (
+            <span style={{
+              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+              width: 24, height: 24, borderRadius: '50%', background: '#CC0000', opacity: 0.2,
+              animation: 'micPulse 1.5s infinite',
+            }} />
+          )}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={isListening ? "#CC0000" : "none"} stroke={isListening ? "#CC0000" : "#666"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ zIndex: 1 }}>
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
           </svg>
         </button>
 

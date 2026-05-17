@@ -84,8 +84,8 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
         ref={heroRef}
         style={{
           position: 'relative',
-          height: '100svh',
-          minHeight: 560,
+          height: '85svh',
+          minHeight: 500,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -119,11 +119,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             background: 'transparent',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          </div>
-          <span style={{ fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif', color: '#6B6B6B' }}>
-            AI Asisten Kependudukan
-          </span>
+
         </motion.div>
 
         {/* ── Hero text content ── */}
