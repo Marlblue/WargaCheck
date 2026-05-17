@@ -1,4 +1,4 @@
-# 🇮🇩 WargaCheck — Asisten AI Dokumen Kependudukan Indonesia
+# WargaCheck — Asisten AI Dokumen Kependudukan Indonesia
 
 > **Tahu dokumen apa yang dibawa, sebelum berangkat.**
 
@@ -21,7 +21,7 @@ Setiap tahun, **jutaan warga Indonesia** harus mengurus dokumen kependudukan di 
 ## ✨ Fitur Utama
 
 ### 1. 💬 AI Konsultasi
-Chat langsung dengan AI yang memahami seluruh prosedur dokumen kependudukan Indonesia. Tanya apa saja tentang KTP, KK, Akta, SKCK, dan lainnya — jawaban terstruktur dengan checklist, estimasi biaya, dan panduan lengkap.
+Chat langsung dengan AI yang memahami seluruh prosedur dokumen kependudukan Indonesia. Tanya apa saja tentang KTP, KK, Akta, SKCK, dan lainnya — jawaban terstruktur dengan checklist, estimasi biaya, dan panduan lengkap. Dilengkapi **voice input/output** dan **smart follow-up suggestions**.
 
 ### 2. 📋 Smart Berkas Checker
 Pilih jenis dokumen, keperluan, status pernikahan, dan kewarganegaraan — AI buatkan checklist interaktif yang bisa dicentang satu per satu. Progress bar menunjukkan kesiapan berkas secara real-time.
@@ -29,11 +29,11 @@ Pilih jenis dokumen, keperluan, status pernikahan, dan kewarganegaraan — AI bu
 ### 3. 📸 AI Document Scanner (Gemini Vision)
 Upload foto dokumen yang sudah dimiliki — AI menganalisis jenis dokumen, memeriksa keterbacaan, dan memberikan rekomendasi dokumen lain yang mungkin diperlukan. Powered by Google Gemini Vision.
 
-### 4. 🎯 Persona-Based Guidance
-Panduan yang disesuaikan untuk berbagai profil pengguna:
-- **Mahasiswa Rantau** — KTP, KK, surat pindah untuk kuliah di kota lain
-- **Pekerja Profesional** — SKCK, akta nikah, dokumen untuk melamar kerja
-- **Ibu Rumah Tangga** — Akta lahir anak, KK, dokumen keluarga
+### 4. 🌙 Dark Mode
+Toggle dark/light mode dengan transisi halus. Mendukung preferensi sistem dan disimpan di localStorage.
+
+### 5. 🎨 Bento Grid Landing Page
+Landing page modern dengan layout bento grid — card-card interaktif dengan warna pastel, animasi reveal, dan preview fitur langsung di halaman utama.
 
 ---
 
@@ -42,11 +42,12 @@ Panduan yang disesuaikan untuk berbagai profil pengguna:
 | Layer | Technology |
 |---|---|
 | Frontend | React 19 + TypeScript + Vite |
-| Styling | Tailwind CSS v4 + Inline Styles |
+| Styling | CSS Custom Properties + Tailwind CSS v4 |
 | Animation | Framer Motion (motion/react) |
 | AI Model | Google Gemini 2.5 Flash |
 | AI Vision | Google Gemini 2.5 Flash (Multimodal) |
 | Backend | Express 4 + Node.js |
+| Font | Plus Jakarta Sans (Google Fonts) |
 | Deployment | Docker (multi-stage build) |
 
 ---
@@ -81,8 +82,8 @@ Panduan yang disesuaikan untuk berbagai profil pengguna:
 
 ```bash
 # Clone
-git clone https://github.com/your-username/wargacheck.git
-cd wargacheck
+git clone https://github.com/Marlblue/WargaCheck.git
+cd WargaCheck
 
 # Install dependencies
 npm install
@@ -110,36 +111,43 @@ docker run -p 8080:8080 -e GEMINI_API_KEY=your_key wargacheck
 ## 📁 Project Structure
 
 ```
-wargacheck/
+WargaCheck/
 ├── server.js                 # Express API server (proxy to Gemini)
-├── index.html                # HTML entry point
-├── vite.config.ts            # Vite + Tailwind + React config
+├── index.html                # HTML entry + fonts + favicon
+├── vite.config.ts            # Vite + Tailwind + code splitting
 ├── Dockerfile                # Multi-stage Docker build
 ├── src/
 │   ├── main.tsx              # React entry point
-│   ├── App.tsx               # Main app with routing
-│   ├── index.css             # Design system & global styles
+│   ├── App.tsx               # App shell + floating navbar + dark mode
+│   ├── index.css             # Design system (CSS tokens + bento grid)
+│   ├── hooks/
+│   │   ├── useTheme.ts       # Dark/light mode hook
+│   │   └── useSpeech.ts      # Voice input/output hook
 │   ├── services/
 │   │   └── gemini.ts         # API client (chat, berkas, scan)
 │   └── components/
-│       ├── WelcomeContent.tsx # Landing page
+│       ├── WelcomeContent.tsx # Bento grid landing page
 │       ├── Chat.tsx           # AI chat interface
 │       ├── BerkasChecker.tsx  # Document checklist generator
 │       ├── DocumentScanner.tsx # AI document scanner (Vision)
 │       ├── ErrorBoundary.tsx  # Error handling
 │       └── shared/
-│           └── FlagIcon.tsx   # Indonesian flag icon
+│           └── LogoIcon.tsx   # WargaCheck brand logo
 ```
 
 ---
 
-## 🎨 Design
+## 🎨 Design System
 
-- **Editorial landing page** — Dark, cinematic hero with parallax Unsplash photography
-- **Indonesian Red (#CC0000)** — Brand color matching the Indonesian flag
-- **Inter font** — Clean, modern typography
-- **Micro-animations** — Framer Motion for smooth transitions and reveals
-- **Mobile-first** — Responsive with `clamp()` values throughout
+- **Bento Grid Layout** — Asymmetric card grid with pastel-colored cards
+- **Warm Palette** — Primary red `#E63946`, warm cream background `#FAF8F5`
+- **Pastel Card Colors** — Rose, blue, mint, amber, purple, sky
+- **Plus Jakarta Sans** — Modern, warm typography
+- **Ultra-Rounded Corners** — 24-32px border radius
+- **Dark Mode** — Full dark theme with CSS custom properties
+- **Floating Pill Navbar** — Centered, glassmorphism navigation
+- **Micro-animations** — Framer Motion reveals, hover lifts, smooth transitions
+- **Mobile-first Responsive** — 4-column → 2-column → 1-column grid
 
 ---
 

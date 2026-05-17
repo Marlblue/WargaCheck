@@ -10,6 +10,17 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-markdown': ['react-markdown', 'remark-gfm'],
+          'vendor-motion': ['motion'],
+        },
+      },
+    },
+  },
   server: {
     // Proxy API calls to the Express backend during development
     proxy: {
