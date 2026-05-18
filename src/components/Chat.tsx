@@ -198,40 +198,37 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
   const hasHistory = messages.length > 0;
 
   return (
-    <div className="chat-container" style={{ height: 'calc(100dvh - 72px)' }}>
+    <div className="chat-container" style={{ height: 'calc(100dvh - 72px)', paddingTop: 8 }}>
 
       {/* ── Chat Header ── */}
       {hasHistory && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '10px 20px',
-          borderBottom: '1px solid var(--border-soft)',
-          background: 'var(--bg-card)',
-        }}>
+        <motion.div
+          className="chat-header"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--primary)', opacity: 0.6 }} />
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: 'var(--primary)',
+              boxShadow: '0 0 8px var(--primary-glow)',
+              animation: 'pulse 2s ease-in-out infinite',
+            }} />
             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '-0.01em' }}>
               {messages.length} pesan
             </span>
           </div>
           <button
+            className="chat-clear-btn"
             onClick={clearHistory}
-            style={{
-              fontSize: 12, fontWeight: 500, color: 'var(--text-tertiary)',
-              background: 'var(--bg-card)', border: '1px solid var(--border)',
-              borderRadius: 'var(--r-sm)', padding: '6px 12px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 5,
-              transition: 'all 0.15s', minHeight: 32,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-tertiary)'; }}
           >
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
               <path d="M2 3.5h10M5.5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M11.5 3.5l-.7 7.3a1 1 0 0 1-1 .9H4.2a1 1 0 0 1-1-.9L2.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Hapus riwayat
           </button>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Messages ── */}
@@ -240,41 +237,53 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
         {/* Empty state */}
         {showQuickReplies && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ paddingBottom: 24 }}>
-            <div style={{ marginBottom: 28 }}>
-              <h2 style={{
-                fontSize: 'clamp(24px, 5.5vw, 28px)', fontWeight: 800,
-                color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 10px',
-              }}>
-                Hai, ada yang bisa<br />
-                <span className="text-gradient">dibantu?</span>
-              </h2>
-              <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
-                Tanya prosedur, syarat, atau checklist berkas dokumen kependudukan apa saja.
-              </p>
+            {/* Decorative blob */}
+            <div style={{ position: 'relative' }}>
+              <div style={{
+                position: 'absolute', top: -30, right: -20, width: 100, height: 100,
+                borderRadius: '50%', background: 'var(--primary)', opacity: 0.04,
+                filter: 'blur(30px)', pointerEvents: 'none',
+              }} />
+              <div style={{ marginBottom: 28 }}>
+                <h2 style={{
+                  fontSize: 'clamp(24px, 5.5vw, 28px)', fontWeight: 800,
+                  color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1.2, margin: '0 0 10px',
+                }}>
+                  Hai, ada yang bisa<br />
+                  <span className="text-gradient">dibantu?</span>
+                </h2>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
+                  Tanya prosedur, syarat, atau checklist berkas dokumen kependudukan apa saja.
+                </p>
+              </div>
             </div>
 
             <p className="section-label">Pertanyaan Populer</p>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {QUICK_REPLIES.map((q, i) => (
-                <button key={q} onClick={() => handleSend(q)} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 2px',
-                  background: 'none', border: 'none',
-                  borderBottom: '1px solid var(--border-soft)',
-                  cursor: 'pointer', textAlign: 'left', width: '100%',
-                  transition: 'all 0.15s',
-                  fontSize: 14, fontWeight: 400,
-                  color: 'var(--text-primary)',
-                  letterSpacing: '-0.01em', minHeight: 48,
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.paddingLeft = '8px'; e.currentTarget.style.color = 'var(--primary)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.paddingLeft = '2px'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                <motion.button
+                  key={q}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 + i * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  whileTap={{ scale: 0.97 }}
+                  className="chat-quick-item"
+                  onClick={() => handleSend(q)}
                 >
-                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', opacity: 0.3, fontVariantNumeric: 'tabular-nums', width: 20 }}>
+                  <span style={{
+                    width: 28, height: 28, borderRadius: 'var(--r-sm)',
+                    background: 'var(--primary-soft)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 700, color: 'var(--primary)',
+                    fontVariantNumeric: 'tabular-nums', flexShrink: 0,
+                  }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  {q}
-                </button>
+                  <span>{q}</span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft: 'auto', color: 'var(--primary)', opacity: 0.4, flexShrink: 0 }}>
+                    <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </motion.button>
               ))}
             </div>
           </motion.div>
@@ -511,7 +520,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
       </div>
 
       {/* Disclaimer */}
-      <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-tertiary)', padding: '6px 20px 12px', margin: 0 }}>
+      <p className="chat-disclaimer">
         Informasi bersifat umum — konfirmasi ke instansi resmi setempat untuk kepastian.
       </p>
 
