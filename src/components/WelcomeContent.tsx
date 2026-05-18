@@ -18,6 +18,8 @@ const topics = [
   { label: 'Surat Pindah', color: 'var(--card-amber)', prompt: 'Saya baru pindah domisili ke kota lain. Jelaskan prosedur surat pindah dari awal sampai selesai.' },
   { label: 'SKCK', color: 'var(--card-purple)', prompt: 'Saya perlu membuat SKCK untuk keperluan lamaran kerja. Apa syaratnya, berapa biayanya, dan bagaimana prosedurnya?' },
   { label: 'Akta Perkawinan', color: 'var(--card-orange)', prompt: 'Saya baru menikah dan perlu mengurus akta perkawinan di Dukcapil. Apa saja dokumen yang diperlukan?' },
+  { label: 'KTP Hilang (Bencana)', color: 'var(--card-sky)', prompt: 'KTP saya hilang karena banjir dan semua dokumen rusak. Bagaimana cara mengurus penggantian KTP dan dokumen lainnya?' },
+  { label: 'Paspor Baru', color: 'var(--card-slate)', prompt: 'Saya mau buat paspor baru untuk pertama kalinya. Apa saja syarat, biaya, dan prosedurnya di kantor imigrasi?' },
 ];
 
 const officialLinks = [
@@ -41,6 +43,38 @@ function Reveal({ children, delay = 0, className, style }: { children: React.Rea
     >
       {children}
     </motion.div>
+  );
+}
+
+/* ── Typewriter text that auto-types when visible ── */
+function TypewriterText({ text, speed = 30, startDelay = 1200 }: { text: string; speed?: number; startDelay?: number }) {
+  const [displayed, setDisplayed] = useState('');
+  const [started, setStarted] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref as React.RefObject<Element>, { once: true });
+
+  useEffect(() => {
+    if (!isInView) return;
+    const delayTimer = setTimeout(() => setStarted(true), startDelay);
+    return () => clearTimeout(delayTimer);
+  }, [isInView, startDelay]);
+
+  useEffect(() => {
+    if (!started) return;
+    if (displayed.length >= text.length) return;
+    const timer = setTimeout(() => {
+      setDisplayed(text.slice(0, displayed.length + 1));
+    }, speed);
+    return () => clearTimeout(timer);
+  }, [started, displayed, text, speed]);
+
+  return (
+    <span ref={ref}>
+      {displayed}
+      {started && displayed.length < text.length && (
+        <span style={{ display: 'inline-block', width: 2, height: 12, background: 'var(--primary)', marginLeft: 1, animation: 'blink 1s infinite', verticalAlign: 'middle' }} />
+      )}
+    </span>
   );
 }
 
@@ -124,41 +158,40 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker, onOp
               Tanya apa saja tentang dokumen kependudukan
             </p>
 
-            {/* Mini chat preview */}
+            {/* Mini chat preview with auto-typing */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'flex-end' }}>
               <motion.div className="mini-bubble mini-bubble-user" style={{ animationDelay: '0.4s' }}>
                 KTP saya hilang, harus bagaimana?
               </motion.div>
               <motion.div className="mini-bubble mini-bubble-ai" style={{ animationDelay: '0.8s' }}>
-                Untuk penggantian KTP hilang, kamu perlu menyiapkan surat kehilangan dari kepolisian, KK asli, dan...
+                <TypewriterText
+                  text="Untuk penggantian KTP hilang, kamu perlu menyiapkan surat kehilangan dari kepolisian, KK asli, dan foto 3x4..."
+                  speed={25}
+                  startDelay={1500}
+                />
               </motion.div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                <span className="dot-1" style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }} />
-                <span className="dot-2" style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }} />
-                <span className="dot-3" style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--primary)', display: 'inline-block' }} />
-              </div>
             </div>
           </div>
         </Reveal>
 
-        {/* ── 3. STATS CARDS (3x small) ── */}
+        {/* ── 3. STATS CARDS (2x small) ── */}
         <Reveal className="bento-card col-1 card-mint" delay={0.25}>
           <div className="stat-counter" style={{ fontSize: 'clamp(32px, 5vw, 40px)' }}>
-            <AnimatedCounter end={15847} suffix="+" />
+            <AnimatedCounter end={10} suffix="+" />
           </div>
           <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginTop: 8, letterSpacing: '0.02em' }}>
-            Warga sudah terbantu
+            Jenis dokumen didukung
           </p>
         </Reveal>
 
         <Reveal className="bento-card col-1 card-amber" delay={0.3}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div className="stat-counter" style={{ fontSize: 'clamp(32px, 5vw, 40px)' }}>
-              <AnimatedCounter end={10} suffix="+" />
+              <AnimatedCounter end={3} />
             </div>
           </div>
           <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginTop: 8, letterSpacing: '0.02em' }}>
-            Jenis dokumen didukung
+            Fitur AI terintegrasi
           </p>
         </Reveal>
 

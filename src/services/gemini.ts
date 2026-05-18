@@ -66,6 +66,80 @@ export async function sendMessage(
   return data.text || '';
 }
 
+/**
+ * Send a chat message with real SSE streaming.
+ * Calls onChunk for each piece of text as it arrives from Gemini.
+ * Returns the full assembled text.
+ */
+export async function sendMessageStream(
+  message: string,
+  history: { role: 'user' | 'model'; parts: { text: string }[] }[] = [],
+  onChunk: (text: string) => void,
+): Promise<string> {
+  let res: Response;
+
+  try {
+    res = await fetchWithTimeout('/api/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, history }),
+    }, 60_000); // longer timeout for streaming
+  } catch (err: unknown) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('Koneksi timeout. Periksa internet kamu dan coba lagi.');
+    }
+    throw new Error('Gagal terhubung ke server. Periksa internet kamu.');
+  }
+
+  if (!res.ok) {
+    await handleErrorResponse(res);
+  }
+
+  // Read the SSE stream
+  const reader = res.body?.getReader();
+  if (!reader) {
+    throw new Error('Streaming tidak didukung di browser ini.');
+  }
+
+  const decoder = new TextDecoder();
+  let fullText = '';
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6).trim();
+
+      if (data === '[DONE]') {
+        return fullText;
+      }
+
+      try {
+        const parsed = JSON.parse(data);
+        if (parsed.error) {
+          throw new Error(parsed.error);
+        }
+        if (parsed.text) {
+          fullText += parsed.text;
+          onChunk(fullText);
+        }
+      } catch (e) {
+        if (e instanceof SyntaxError) continue; // skip malformed chunks
+        throw e;
+      }
+    }
+  }
+
+  return fullText;
+}
+
 export async function checkBerkas(
   jenisLayanan: string,
   keperluan: string,

@@ -20,20 +20,23 @@ Setiap tahun, **jutaan warga Indonesia** harus mengurus dokumen kependudukan di 
 
 ## ✨ Fitur Utama
 
-### 1. 💬 AI Konsultasi
-Chat langsung dengan AI yang memahami seluruh prosedur dokumen kependudukan Indonesia. Tanya apa saja tentang KTP, KK, Akta, SKCK, dan lainnya — jawaban terstruktur dengan checklist, estimasi biaya, dan panduan lengkap. Dilengkapi **voice input/output** dan **smart follow-up suggestions**.
+### 1. 💬 AI Konsultasi (Real-Time Streaming)
+Chat langsung dengan AI yang memahami seluruh prosedur dokumen kependudukan Indonesia. **Response di-stream secara real-time** (SSE) — teks muncul langsung saat AI berpikir, seperti ChatGPT. Dilengkapi **voice input/output**, **smart follow-up suggestions**, dan tombol **salin/bagikan ke WhatsApp**.
 
 ### 2. 📋 Smart Berkas Checker
-Pilih jenis dokumen, keperluan, status pernikahan, dan kewarganegaraan — AI buatkan checklist interaktif yang bisa dicentang satu per satu. Progress bar menunjukkan kesiapan berkas secara real-time.
+Pilih jenis dokumen, keperluan, status pernikahan, dan kewarganegaraan — AI buatkan checklist interaktif yang bisa dicentang satu per satu. Progress bar menunjukkan kesiapan berkas secara real-time. **Confetti celebration** saat semua berkas siap. **Bagikan checklist ke WhatsApp** dengan satu klik.
 
 ### 3. 📸 AI Document Scanner (Gemini Vision)
 Upload foto dokumen yang sudah dimiliki — AI menganalisis jenis dokumen, memeriksa keterbacaan, dan memberikan rekomendasi dokumen lain yang mungkin diperlukan. Powered by Google Gemini Vision.
 
-### 4. 🌙 Dark Mode
+### 4. 📱 Progressive Web App (PWA)
+Install WargaCheck ke home screen HP — akses cepat tanpa buka browser. Static assets di-cache untuk performa optimal.
+
+### 5. 🌙 Dark Mode
 Toggle dark/light mode dengan transisi halus. Mendukung preferensi sistem dan disimpan di localStorage.
 
-### 5. 🎨 Bento Grid Landing Page
-Landing page modern dengan layout bento grid — card-card interaktif dengan warna pastel, animasi reveal, dan preview fitur langsung di halaman utama.
+### 6. 🎨 Bento Grid Landing Page
+Landing page modern dengan layout bento grid — card-card interaktif dengan warna pastel, animasi reveal, **auto-typing AI demo**, dan preview fitur langsung di halaman utama.
 
 ---
 
@@ -156,7 +159,8 @@ WargaCheck/
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/health` | Health check |
-| `POST` | `/api/chat` | AI consultation chat |
+| `POST` | `/api/chat` | AI consultation chat (JSON) |
+| `POST` | `/api/chat/stream` | AI consultation chat (SSE real-time streaming) |
 | `POST` | `/api/check-berkas` | Generate document checklist |
 | `POST` | `/api/scan` | Analyze document photo (Vision) |
 

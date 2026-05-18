@@ -15,19 +15,35 @@ const DocumentScanner = lazy(() => import('./components/DocumentScanner'));
 
 type View = 'welcome' | 'chat' | 'berkas';
 
-/** Spinner fallback for lazy-loaded components */
+/** Skeleton fallback for lazy-loaded components */
 function LoadingFallback() {
   return (
     <div style={{
-      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexDirection: 'column', gap: 16,
+      flex: 1, display: 'flex', flexDirection: 'column',
+      maxWidth: 760, width: '100%', margin: '0 auto', padding: '24px 16px',
     }}>
-      <div style={{
-        width: 32, height: 32, borderRadius: '50%',
-        border: '2.5px solid var(--border)', borderTopColor: 'var(--primary)',
-        animation: 'spin 0.8s linear infinite',
-      }} />
-      <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>Memuat...</span>
+      {/* Skeleton header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+        <div className="skeleton" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+        <div style={{ flex: 1 }}>
+          <div className="skeleton skeleton-text" style={{ width: '40%' }} />
+          <div className="skeleton skeleton-text" style={{ width: '25%', height: 10 }} />
+        </div>
+      </div>
+      {/* Skeleton messages */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ alignSelf: 'flex-end', width: '60%' }}>
+          <div className="skeleton" style={{ height: 44, borderRadius: 'var(--r-lg)' }} />
+        </div>
+        <div style={{ display: 'flex', gap: 10, width: '75%' }}>
+          <div className="skeleton" style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div className="skeleton skeleton-text" />
+            <div className="skeleton skeleton-text" />
+            <div className="skeleton skeleton-text" style={{ width: '80%' }} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -75,6 +91,9 @@ export default function App() {
       fontFamily: 'var(--font)',
       transition: 'background 0.3s ease',
     }}>
+
+      {/* Skip to content for accessibility */}
+      <a href="#main-content" className="skip-link">Langsung ke konten utama</a>
 
       {/* ── Floating Pill Navbar ── */}
       <nav className="navbar" role="navigation" aria-label="Navigasi utama" style={{ marginBottom: view === 'welcome' ? 0 : 8 }}>
@@ -142,7 +161,7 @@ export default function App() {
       </nav>
 
       {/* ── Main Content ── */}
-      <main style={{
+      <main id="main-content" style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',

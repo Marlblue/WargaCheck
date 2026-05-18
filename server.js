@@ -15,25 +15,49 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// ── Simple request logging ──
-app.use((req, _res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+// ── Structured request logging with timing ──
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(JSON.stringify({
+      ts: new Date().toISOString(),
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      ms: duration,
+    }));
+  });
   next();
 });
 
 // ── Security Middleware ──
 app.use(helmet({
-  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'", "https://wa.me"],
+      workerSrc: ["'self'"],
+      manifestSrc: ["'self'"],
+    },
+  } : false,
 }));
 
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:3000', 'http://localhost:3001'];
-
+// In production (Cloud Run), frontend and API share the same origin.
+// Allow same-origin requests (origin is undefined for same-origin fetch).
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
     ? (origin, cb) => {
-        if (!origin || ALLOWED_ORIGINS.includes(origin)) cb(null, true);
+        // Same-origin requests have no 'origin' header — always allow
+        if (!origin) return cb(null, true);
+        const allowed = process.env.ALLOWED_ORIGINS
+          ? process.env.ALLOWED_ORIGINS.split(',')
+          : [];
+        if (allowed.includes(origin)) cb(null, true);
         else cb(new Error('Not allowed by CORS'));
       }
     : '*',
@@ -239,6 +263,32 @@ function getAI() {
   }
   return ai;
 }
+// Model fallback chain — if primary model hits rate limit, try fallback
+const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+
+function isRateLimitError(err) {
+  return err?.status === 429 ||
+    err?.message?.includes('429') ||
+    err?.message?.includes('RESOURCE_EXHAUSTED') ||
+    err?.message?.includes('quota');
+}
+
+function extractRetryAfter(err) {
+  // Try to extract retry delay from error details
+  try {
+    const match = err?.message?.match(/retry.*?(\d+)s/i);
+    if (match) return parseInt(match[1], 10);
+    if (err?.details) {
+      for (const d of err.details) {
+        if (d.retryDelay) {
+          const sec = parseInt(d.retryDelay, 10);
+          if (!isNaN(sec)) return sec;
+        }
+      }
+    }
+  } catch {}
+  return 60; // default 60s
+}
 
 async function callGeminiWithTimeout(genai, options, timeoutMs = GEMINI_TIMEOUT_MS) {
   return Promise.race([
@@ -249,6 +299,38 @@ async function callGeminiWithTimeout(genai, options, timeoutMs = GEMINI_TIMEOUT_
   ]);
 }
 
+// Try primary model, fallback to secondary on rate limit
+async function callWithFallback(genai, options, timeoutMs = GEMINI_TIMEOUT_MS) {
+  for (const model of MODELS) {
+    try {
+      const result = await callGeminiWithTimeout(genai, { ...options, model }, timeoutMs);
+      return result;
+    } catch (err) {
+      if (isRateLimitError(err) && model !== MODELS[MODELS.length - 1]) {
+        console.log(`[Fallback] ${model} rate limited, trying next model...`);
+        continue;
+      }
+      throw err; // Re-throw if not rate limit or last model
+    }
+  }
+}
+
+// Stream version with fallback
+async function streamWithFallback(genai, options) {
+  for (const model of MODELS) {
+    try {
+      const stream = await genai.models.generateContentStream({ ...options, model });
+      return stream;
+    } catch (err) {
+      if (isRateLimitError(err) && model !== MODELS[MODELS.length - 1]) {
+        console.log(`[Fallback] ${model} stream rate limited, trying next model...`);
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 // ── API Routes ──
 
 // Health check
@@ -256,7 +338,7 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Chat endpoint
+// Chat endpoint (non-streaming fallback)
 app.use('/api/chat', express.json({ limit: '1mb' }));
 app.post('/api/chat', createRateLimiter('chat'), async (req, res) => {
   try {
@@ -269,8 +351,7 @@ app.post('/api/chat', createRateLimiter('chat'), async (req, res) => {
     const safeHistory = sanitizeHistory(history);
     const genai = getAI();
 
-    const response = await callGeminiWithTimeout(genai, {
-      model: 'gemini-2.5-flash',
+    const response = await callWithFallback(genai, {
       contents: [
         ...safeHistory,
         { role: 'user', parts: [{ text: validation.text }] },
@@ -287,7 +368,89 @@ app.post('/api/chat', createRateLimiter('chat'), async (req, res) => {
     if (err.message === 'TIMEOUT') {
       return res.status(504).json({ error: 'AI sedang sibuk. Coba lagi dalam beberapa detik.' });
     }
+    if (isRateLimitError(err)) {
+      const retryAfter = extractRetryAfter(err);
+      return res.status(429).json({ error: `Kuota AI habis. Coba lagi dalam ${retryAfter} detik.`, retryAfter });
+    }
     res.status(500).json({ error: 'Gagal memproses permintaan. Coba lagi.' });
+  }
+});
+
+// Chat endpoint (SSE real streaming)
+app.use('/api/chat/stream', express.json({ limit: '1mb' }));
+app.post('/api/chat/stream', createRateLimiter('chat'), async (req, res) => {
+  try {
+    const { message, history = [] } = req.body;
+    const validation = validateMessage(message);
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
+    const safeHistory = sanitizeHistory(history);
+    const genai = getAI();
+
+    // Set SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+
+    // Handle client disconnect
+    let aborted = false;
+    req.on('close', () => { aborted = true; });
+
+    const timeoutId = setTimeout(() => {
+      if (!aborted) {
+        res.write(`data: ${JSON.stringify({ error: 'AI sedang sibuk. Coba lagi dalam beberapa detik.' })}\n\n`);
+        res.write('data: [DONE]\n\n');
+        res.end();
+      }
+    }, GEMINI_TIMEOUT_MS);
+
+    const stream = await streamWithFallback(genai, {
+      contents: [
+        ...safeHistory,
+        { role: 'user', parts: [{ text: validation.text }] },
+      ],
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
+        temperature: 0.6,
+      },
+    });
+
+    clearTimeout(timeoutId);
+
+    for await (const chunk of stream) {
+      if (aborted) break;
+      const text = chunk.text;
+      if (text) {
+        res.write(`data: ${JSON.stringify({ text })}\n\n`);
+      }
+    }
+
+    if (!aborted) {
+      res.write('data: [DONE]\n\n');
+      res.end();
+    }
+  } catch (err) {
+    console.error('[/api/chat/stream] Error:', err.message);
+    let errorMsg = 'Gagal memproses permintaan. Coba lagi.';
+    if (err.message === 'TIMEOUT') {
+      errorMsg = 'AI sedang sibuk. Coba lagi dalam beberapa detik.';
+    } else if (isRateLimitError(err)) {
+      const retryAfter = extractRetryAfter(err);
+      errorMsg = `Kuota AI habis. Coba lagi dalam ${retryAfter} detik.`;
+    }
+    // If headers already sent, send as SSE event
+    if (res.headersSent) {
+      res.write(`data: ${JSON.stringify({ error: errorMsg })}\n\n`);
+      res.write('data: [DONE]\n\n');
+      res.end();
+    } else {
+      const statusCode = isRateLimitError(err) ? 429 : 500;
+      res.status(statusCode).json({ error: errorMsg });
+    }
   }
 });
 
@@ -314,8 +477,7 @@ app.post('/api/check-berkas', createRateLimiter('berkas'), async (req, res) => {
 
     const genai = getAI();
 
-    const response = await callGeminiWithTimeout(genai, {
-      model: 'gemini-2.5-flash',
+    const response = await callWithFallback(genai, {
       contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
       config: {
         systemInstruction: BERKAS_CHECKER_PROMPT,
@@ -328,6 +490,10 @@ app.post('/api/check-berkas', createRateLimiter('berkas'), async (req, res) => {
     console.error('[/api/check-berkas] Error:', err.message);
     if (err.message === 'TIMEOUT') {
       return res.status(504).json({ error: 'AI sedang sibuk. Coba lagi dalam beberapa detik.' });
+    }
+    if (isRateLimitError(err)) {
+      const retryAfter = extractRetryAfter(err);
+      return res.status(429).json({ error: `Kuota AI habis. Coba lagi dalam ${retryAfter} detik.`, retryAfter });
     }
     res.status(500).json({ error: 'Gagal memproses permintaan. Coba lagi.' });
   }
@@ -357,8 +523,7 @@ app.post('/api/scan', createRateLimiter('scan'), async (req, res) => {
 
     const genai = getAI();
 
-    const response = await callGeminiWithTimeout(genai, {
-      model: 'gemini-2.5-flash',
+    const response = await callWithFallback(genai, {
       contents: [{
         role: 'user',
         parts: [
@@ -378,14 +543,42 @@ app.post('/api/scan', createRateLimiter('scan'), async (req, res) => {
     if (err.message === 'TIMEOUT') {
       return res.status(504).json({ error: 'Analisis memakan waktu terlalu lama. Coba foto yang lebih jelas.' });
     }
+    if (isRateLimitError(err)) {
+      const retryAfter = extractRetryAfter(err);
+      return res.status(429).json({ error: `Kuota AI habis. Coba lagi dalam ${retryAfter} detik.`, retryAfter });
+    }
     res.status(500).json({ error: 'Gagal menganalisis dokumen. Coba lagi.' });
   }
 });
 
 // ── Serve static files in production ──
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
+  // Hashed assets get long cache (1 year)
+  app.use('/assets', express.static(path.join(__dirname, 'dist', 'assets'), {
+    maxAge: '365d',
+    immutable: true,
+  }));
+
+  // Service worker must be served with no-cache so updates propagate
+  app.get('/sw.js', (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.sendFile(path.join(__dirname, 'dist', 'sw.js'));
+  });
+
+  // Other static files (manifest, index.html) — short cache
+  app.use(express.static(path.join(__dirname, 'dist'), {
+    maxAge: '1h',
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    },
+  }));
+
+  // SPA fallback — all non-API routes serve index.html
   app.get('*', (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache');
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
   });
 }
