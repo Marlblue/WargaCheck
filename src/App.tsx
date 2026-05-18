@@ -11,6 +11,7 @@ import LogoIcon from './components/shared/LogoIcon';
 // Lazy load heavy components for better initial load performance
 const Chat = lazy(() => import('./components/Chat'));
 const BerkasChecker = lazy(() => import('./components/BerkasChecker'));
+const DocumentScanner = lazy(() => import('./components/DocumentScanner'));
 
 type View = 'welcome' | 'chat' | 'berkas';
 
@@ -34,6 +35,7 @@ function LoadingFallback() {
 export default function App() {
   const [view, setView] = useState<View>('welcome');
   const [initialPrompt, setInitialPrompt] = useState<string | undefined>(undefined);
+  const [showScanner, setShowScanner] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
   const startChat = useCallback((prompt?: string) => {
@@ -50,6 +52,17 @@ export default function App() {
 
   const openBerkasChecker = useCallback(() => {
     setView('berkas');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const openScanner = useCallback(() => {
+    setShowScanner(true);
+  }, []);
+
+  const handleScanComplete = useCallback((result: string) => {
+    setShowScanner(false);
+    setInitialPrompt(`Saya sudah scan dokumen. Hasil scan:\n\n${result}\n\nTolong bantu saya lanjutkan prosesnya.`);
+    setView('chat');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -146,7 +159,11 @@ export default function App() {
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
             >
-              <WelcomeContent onQuickTopic={startChat} onOpenBerkasChecker={openBerkasChecker} />
+              <WelcomeContent
+                onQuickTopic={startChat}
+                onOpenBerkasChecker={openBerkasChecker}
+                onOpenScanner={openScanner}
+              />
             </motion.div>
           ) : view === 'chat' ? (
             <motion.div
@@ -177,6 +194,18 @@ export default function App() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* ── App-level Document Scanner Modal ── */}
+      <AnimatePresence>
+        {showScanner && (
+          <Suspense fallback={null}>
+            <DocumentScanner
+              onClose={() => setShowScanner(false)}
+              onScanComplete={handleScanComplete}
+            />
+          </Suspense>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { motion, useInView } from 'motion/react';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 interface WelcomeContentProps {
   onQuickTopic: (topic: string) => void;
   onOpenBerkasChecker: () => void;
+  onOpenScanner: () => void;
 }
 
 const topics = [
@@ -43,7 +44,29 @@ function Reveal({ children, delay = 0, className, style }: { children: React.Rea
   );
 }
 
-export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: WelcomeContentProps) {
+/* ── Animated counter that counts up when visible ── */
+function AnimatedCounter({ end, suffix = '', duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref as React.RefObject<Element>, { once: true });
+
+  useEffect(() => {
+    if (!isInView) return;
+    const startTime = Date.now();
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * end));
+      if (progress >= 1) clearInterval(timer);
+    }, 16);
+    return () => clearInterval(timer);
+  }, [isInView, end, duration]);
+
+  return <span ref={ref}>{count.toLocaleString('id-ID')}{suffix}</span>;
+}
+
+export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker, onOpenScanner }: WelcomeContentProps) {
   const [hoveredTopic, setHoveredTopic] = useState<number | null>(null);
 
   return (
@@ -56,11 +79,14 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
 
         {/* ── 1. HERO CARD (large) ── */}
         <Reveal className="bento-card col-2 row-2 card-rose" delay={0.1} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          {/* Animated gradient background */}
+          <div className="hero-gradient-bg" />
+
           {/* Decorative corner accent */}
           <div style={{ position: 'absolute', top: -40, right: -40, width: 120, height: 120, borderRadius: '50%', background: 'var(--primary)', opacity: 0.07 }} />
           <div style={{ position: 'absolute', bottom: -30, left: -30, width: 80, height: 80, borderRadius: '50%', background: 'var(--primary)', opacity: 0.05 }} />
 
-          <div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
             <p className="section-label">Asisten Dokumen AI</p>
             <h1 style={{
               fontSize: 'clamp(28px, 5vw, 42px)',
@@ -79,7 +105,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             </p>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, position: 'relative', zIndex: 1 }}>
             <button className="btn btn-primary" onClick={() => onQuickTopic('')}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               Mulai Konsultasi
@@ -117,22 +143,22 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
 
         {/* ── 3. STATS CARDS (3x small) ── */}
         <Reveal className="bento-card col-1 card-mint" delay={0.25}>
-          <div style={{ fontSize: 'clamp(32px, 5vw, 40px)', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text-primary)', lineHeight: 1 }}>
-            10+
+          <div className="stat-counter" style={{ fontSize: 'clamp(32px, 5vw, 40px)' }}>
+            <AnimatedCounter end={15847} suffix="+" />
           </div>
           <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginTop: 8, letterSpacing: '0.02em' }}>
-            Jenis dokumen didukung
+            Warga sudah terbantu
           </p>
         </Reveal>
 
         <Reveal className="bento-card col-1 card-amber" delay={0.3}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ fontSize: 'clamp(32px, 5vw, 40px)', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--text-primary)', lineHeight: 1 }}>
-              24/7
+            <div className="stat-counter" style={{ fontSize: 'clamp(32px, 5vw, 40px)' }}>
+              <AnimatedCounter end={10} suffix="+" />
             </div>
           </div>
           <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginTop: 8, letterSpacing: '0.02em' }}>
-            Selalu tersedia kapan saja
+            Jenis dokumen didukung
           </p>
         </Reveal>
 
@@ -280,19 +306,21 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
           </div>
         </Reveal>
 
-        {/* ── 7. DOCUMENT SCANNER CARD ── */}
+        {/* ── 7. DOCUMENT SCANNER CARD — Now correctly opens scanner ── */}
         <Reveal className="bento-card col-1 card-sky clickable" delay={0.25}>
-          <div onClick={() => onQuickTopic('')} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{
-              width: 48, height: 48, borderRadius: 'var(--r-md)',
-              background: 'var(--primary-soft)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 16,
-            }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
-                <circle cx="12" cy="13" r="4" />
-              </svg>
+          <div onClick={onOpenScanner} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: 'var(--r-md)',
+                background: 'var(--primary-soft)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              </div>
+              <span className="scanner-badge">Gemini Vision</span>
             </div>
             <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: 6 }}>
               Scan Dokumen
@@ -315,7 +343,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker }: We
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: 12,
           }}>
-            {officialLinks.map((link, i) => (
+            {officialLinks.map((link) => (
               <motion.a
                 key={link.url}
                 href={link.url}

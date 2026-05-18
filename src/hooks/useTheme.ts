@@ -13,9 +13,10 @@ export function useTheme() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('wc-theme', theme);
-    // Update meta theme-color
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', theme === 'dark' ? '#111111' : '#FAF8F5');
+    // Update all meta theme-color elements
+    const metas = document.querySelectorAll('meta[name="theme-color"]');
+    const color = theme === 'dark' ? '#111111' : '#FAF8F5';
+    metas.forEach(meta => meta.setAttribute('content', color));
   }, [theme]);
 
   const toggleTheme = useCallback(() => {

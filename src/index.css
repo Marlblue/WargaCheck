@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&display=swap');
+/* Font loaded via <link> in index.html — no @import needed */
 @import "tailwindcss";
 
 /* ══════════════════════════════════════════════
@@ -716,7 +716,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5;
+  gap: 5px;
   transition: all 0.25s var(--ease-out);
   min-height: 32px;
 }
@@ -1158,4 +1158,211 @@ textarea:focus-visible {
   height: 1px;
   background: var(--border);
   width: 100%;
+}
+
+/* ══════════════════════════════════════════════
+   ANIMATED HERO GRADIENT
+   ══════════════════════════════════════════════ */
+.hero-gradient-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-gradient-bg::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(230, 57, 70, 0.06) 0deg,
+    rgba(249, 115, 22, 0.06) 120deg,
+    rgba(139, 92, 246, 0.06) 240deg,
+    rgba(230, 57, 70, 0.06) 360deg
+  );
+  animation: heroRotate 12s linear infinite;
+}
+
+[data-theme="dark"] .hero-gradient-bg::before {
+  background: conic-gradient(
+    from 0deg,
+    rgba(248, 113, 113, 0.08) 0deg,
+    rgba(249, 115, 22, 0.08) 120deg,
+    rgba(139, 92, 246, 0.08) 240deg,
+    rgba(248, 113, 113, 0.08) 360deg
+  );
+}
+
+@keyframes heroRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════════════════════
+   CONFETTI CELEBRATION
+   ══════════════════════════════════════════════ */
+.confetti-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--confetti-color, #E63946);
+  left: var(--confetti-x, 50%);
+  top: -10px;
+  border-radius: 2px;
+  animation: confettiFall 2.5s var(--confetti-delay, 0s) ease-out forwards;
+  opacity: 0;
+}
+
+.confetti-piece:nth-child(odd) {
+  width: 6px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+@keyframes confettiFall {
+  0% {
+    top: -10px;
+    opacity: 1;
+    transform: rotate(0deg) translateX(0);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+    transform: rotate(720deg) translateX(calc((var(--confetti-drift, 0) - 0.5) * 120px));
+  }
+}
+
+/* ══════════════════════════════════════════════
+   COPY BUTTON
+   ══════════════════════════════════════════════ */
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-out);
+  min-height: 36px;
+}
+
+.copy-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+  transform: translateY(-1px);
+}
+
+.copy-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.copy-btn.copied {
+  border-color: #22c55e;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+/* ══════════════════════════════════════════════
+   CONFIRM DIALOG
+   ══════════════════════════════════════════════ */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.confirm-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 28px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.confirm-dialog h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+
+.confirm-dialog p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 24px;
+  line-height: 1.6;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-actions .btn {
+  flex: 1;
+  border-radius: var(--r-md);
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+/* ══════════════════════════════════════════════
+   ANIMATED COUNTER
+   ══════════════════════════════════════════════ */
+.stat-counter {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+/* ══════════════════════════════════════════════
+   SCANNER STANDALONE CARD ENHANCEMENT
+   ══════════════════════════════════════════════ */
+.scanner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }

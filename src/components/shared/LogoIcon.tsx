@@ -3,14 +3,13 @@ import React from 'react';
 interface LogoIconProps {
   size?: number;
   style?: React.CSSProperties;
-  variant?: 'full' | 'mark';
 }
 
 /**
  * WargaCheck custom logo — rounded square with stylized checkmark + document motif.
  * Used as avatar in chat, navbar branding, and favicon-style icon.
  */
-export default function LogoIcon({ size = 22, style, variant = 'mark' }: LogoIconProps) {
+export default function LogoIcon({ size = 22, style }: LogoIconProps) {
   return (
     <svg
       width={size}

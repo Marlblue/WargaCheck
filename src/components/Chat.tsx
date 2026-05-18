@@ -48,9 +48,11 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
   const [streamingText, setStreamingText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const didInit = useRef(false);
+  const msgIdCounter = useRef(0);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -75,7 +77,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
     const text = textToSend.trim();
     if (!text || isLoading) return;
 
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', text, timestamp: new Date().toISOString() };
+    const userMsg: Message = { id: `u-${Date.now()}-${++msgIdCounter.current}`, role: 'user', text, timestamp: new Date().toISOString() };
 
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -122,7 +124,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
       const suggestions = generateSuggestions(fullText, text);
 
       const botMsg: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `m-${Date.now()}-${++msgIdCounter.current}`,
         role: 'model',
         text: fullText,
         timestamp: new Date().toISOString(),
@@ -135,7 +137,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
     } catch (err: unknown) {
       const errorText = err instanceof Error ? err.message : 'Sepertinya ada masalah koneksi. Coba lagi sebentar.';
       const errMsg: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `e-${Date.now()}-${++msgIdCounter.current}`,
         role: 'model',
         text: errorText,
         timestamp: new Date().toISOString(),
@@ -150,26 +152,33 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
   }, [messages, isLoading]);
 
   const generateSuggestions = (response: string, _userQuestion: string): string[] => {
-    const suggestions: string[] = [];
-    if (response.toLowerCase().includes('biaya') || response.toLowerCase().includes('gratis')) {
-      suggestions.push('Berapa lama prosesnya?');
+    const lower = response.toLowerCase();
+    const pool: string[] = [];
+    // Cost-related
+    if (lower.includes('biaya') || lower.includes('gratis')) {
+      pool.push('Berapa lama prosesnya?');
     } else {
-      suggestions.push('Berapa biayanya?');
+      pool.push('Berapa biayanya?');
     }
-    if (response.toLowerCase().includes('hari') || response.toLowerCase().includes('minggu')) {
-      suggestions.push('Bisa dipercepat?');
+    // Time-related
+    if (lower.includes('hari') || lower.includes('minggu')) {
+      pool.push('Bisa dipercepat?');
+    }
+    // Document-related
+    if (lower.includes('dokumen') || lower.includes('berkas')) {
+      pool.push('Buatkan checklist lengkapnya');
     } else {
-      suggestions.push('Berapa lama prosesnya?');
+      pool.push('Dokumen apa saja yang perlu disiapkan?');
     }
-    if (response.toLowerCase().includes('dokumen') || response.toLowerCase().includes('berkas')) {
-      suggestions.push('Buatkan checklist lengkapnya');
-    } else {
-      suggestions.push('Dokumen apa saja yang perlu disiapkan?');
+    // Online option
+    if (!lower.includes('online')) {
+      pool.push('Bisa diurus online?');
     }
-    if (!response.toLowerCase().includes('online')) {
-      suggestions.push('Bisa diurus online?');
+    // Location
+    if (!lower.includes('alamat') && !lower.includes('lokasi')) {
+      pool.push('Di mana kantor terdekat?');
     }
-    return [...new Set(suggestions)].slice(0, 3);
+    return [...new Set(pool)].slice(0, 3);
   };
 
   const handleSendRef = useRef(handleSend);
@@ -186,6 +195,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
     setMessages([]);
     localStorage.removeItem(STORAGE_KEY);
     didInit.current = false;
+    setShowConfirmClear(false);
   };
 
   const fmt = (iso: string) => {
@@ -221,7 +231,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
           </div>
           <button
             className="chat-clear-btn"
-            onClick={clearHistory}
+            onClick={() => setShowConfirmClear(true)}
           >
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
               <path d="M2 3.5h10M5.5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M11.5 3.5l-.7 7.3a1 1 0 0 1-1 .9H4.2a1 1 0 0 1-1-.9L2.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -533,6 +543,35 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
               handleSend(`Saya sudah scan dokumen. Hasil scan:\n\n${result}\n\nTolong bantu saya lanjutkan prosesnya.`);
             }}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Confirmation Dialog */}
+      <AnimatePresence>
+        {showConfirmClear && (
+          <motion.div
+            className="confirm-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowConfirmClear(false)}
+          >
+            <motion.div
+              className="confirm-dialog"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3>Hapus Riwayat Chat?</h3>
+              <p>Semua {messages.length} pesan akan dihapus permanen dan tidak bisa dikembalikan.</p>
+              <div className="confirm-actions">
+                <button className="btn btn-outline" onClick={() => setShowConfirmClear(false)}>Batal</button>
+                <button className="btn btn-primary" onClick={clearHistory}>Ya, Hapus</button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
