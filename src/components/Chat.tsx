@@ -38,7 +38,7 @@ const QUICK_REPLIES = [
 ];
 
 export default function Chat({ initialMessage, onBack }: ChatProps) {
-  const { isListening, startListening, stopListening, isPlaying, activeMessageId, speak, stopSpeaking, error: speechError, clearError: clearSpeechError } = useSpeech();
+  const { isSupported, isListening, startListening, stopListening, isPlaying, activeMessageId, speak, stopSpeaking, error: speechError, clearError: clearSpeechError } = useSpeech();
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -526,35 +526,37 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
         </button>
 
         {/* Voice */}
-        <button
-          className="chat-icon-btn"
-          onClick={() => {
-            if (isListening) { stopListening(); }
-            else { startListening((text) => { setInput(prev => prev ? prev + ' ' + text : text); }); }
-          }}
-          disabled={isLoading}
-          aria-label={isListening ? "Hentikan mendengarkan suara" : "Mulai input suara"}
-          title={isListening ? "Sedang mendengarkan..." : "Gunakan suara"}
-          aria-pressed={isListening}
-          style={{
-            opacity: isLoading ? 0.5 : 1,
-            background: isListening ? 'var(--primary-soft)' : undefined,
-            position: 'relative',
-          }}
-        >
-          {isListening && (
-            <span style={{
-              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-              width: 24, height: 24, borderRadius: '50%', background: 'var(--primary)', opacity: 0.2,
-              animation: 'micPulse 1.5s infinite',
-            }} aria-hidden="true" />
-          )}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill={isListening ? "var(--primary)" : "none"} stroke={isListening ? "var(--primary)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ zIndex: 1 }} aria-hidden="true">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-            <line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>
-          </svg>
-        </button>
+        {isSupported && (
+          <button
+            className="chat-icon-btn"
+            onClick={() => {
+              if (isListening) { stopListening(); }
+              else { startListening((text) => { setInput(prev => prev ? prev + ' ' + text : text); }); }
+            }}
+            disabled={isLoading}
+            aria-label={isListening ? "Hentikan mendengarkan suara" : "Mulai input suara"}
+            title={isListening ? "Sedang mendengarkan..." : "Gunakan suara"}
+            aria-pressed={isListening}
+            style={{
+              opacity: isLoading ? 0.5 : 1,
+              background: isListening ? 'var(--primary-soft)' : undefined,
+              position: 'relative',
+            }}
+          >
+            {isListening && (
+              <span style={{
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                width: 24, height: 24, borderRadius: '50%', background: 'var(--primary)', opacity: 0.2,
+                animation: 'micPulse 1.5s infinite',
+              }} aria-hidden="true" />
+            )}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={isListening ? "var(--primary)" : "none"} stroke={isListening ? "var(--primary)" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ zIndex: 1 }} aria-hidden="true">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </button>
+        )}
 
         <input
           ref={inputRef}

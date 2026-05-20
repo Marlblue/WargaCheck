@@ -139,6 +139,22 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
                       <span style={{ color: 'var(--primary)', marginRight: 8 }}>•</span><span>{f}</span>
                     </div>
                   ))}
+                  <div style={{
+                    marginTop: 20, padding: '12px 16px', background: 'var(--card-mint)', 
+                    borderRadius: 'var(--r-md)', border: '1px solid #86EFAC',
+                    display: 'flex', gap: 12, alignItems: 'flex-start'
+                  }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <div>
+                      <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: '#166534' }}>Privasi Anda Terjamin 100%</p>
+                      <p style={{ margin: 0, fontSize: 12, color: '#15803D', lineHeight: 1.5 }}>
+                        Foto yang diunggah <strong>tidak pernah disimpan</strong> di database kami. Diproses sesaat oleh AI di memori dan langsung dihapus permanen.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}

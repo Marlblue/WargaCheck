@@ -42,12 +42,24 @@ export default class ErrorBoundary extends React.Component<
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 24px', maxWidth: 360, lineHeight: 1.6 }}>
             Aplikasi mengalami error. Silakan muat ulang halaman untuk melanjutkan.
           </p>
-          <button
-            onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
-            className="btn btn-primary"
-          >
-            Muat Ulang
-          </button>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button
+              onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+              className="btn btn-outline"
+            >
+              Coba Muat Ulang
+            </button>
+            <button
+              onClick={() => { 
+                localStorage.removeItem('wargacheck_history'); // Bersihkan state chat yang mungkin korup
+                this.setState({ hasError: false }); 
+                window.location.reload(); 
+              }}
+              className="btn btn-primary"
+            >
+              Reset Data & Muat Ulang
+            </button>
+          </div>
         </div>
       );
     }

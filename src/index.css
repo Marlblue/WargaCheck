@@ -27,13 +27,21 @@
 
   /* ── Bento Card Pastel Palettes ── */
   --card-rose: #FFF1F2;
+  --card-rose-border: #FECDD3;
   --card-blue: #EFF6FF;
+  --card-blue-border: #BFDBFE;
   --card-mint: #ECFDF5;
+  --card-mint-border: #A7F3D0;
   --card-amber: #FFFBEB;
+  --card-amber-border: #FDE68A;
   --card-purple: #F5F3FF;
+  --card-purple-border: #DDD6FE;
   --card-orange: #FFF7ED;
+  --card-orange-border: #FED7AA;
   --card-sky: #F0F9FF;
+  --card-sky-border: #BAE6FD;
   --card-slate: #F8FAFC;
+  --card-slate-border: #E2E8F0;
 
   /* ── Border ── */
   --border: #E5E7EB;
@@ -80,13 +88,21 @@
   --text-on-primary: #FFFFFF;
 
   --card-rose: #1C1215;
+  --card-rose-border: rgba(248, 113, 113, 0.15);
   --card-blue: #111827;
+  --card-blue-border: rgba(96, 165, 250, 0.15);
   --card-mint: #111C18;
+  --card-mint-border: rgba(52, 211, 153, 0.15);
   --card-amber: #1C1A11;
+  --card-amber-border: rgba(251, 191, 36, 0.15);
   --card-purple: #16121F;
+  --card-purple-border: rgba(167, 139, 250, 0.15);
   --card-orange: #1C1611;
+  --card-orange-border: rgba(251, 146, 60, 0.15);
   --card-sky: #111820;
+  --card-sky-border: rgba(56, 189, 248, 0.15);
   --card-slate: #18181B;
+  --card-slate-border: rgba(148, 163, 184, 0.15);
 
   --border: #2A2A2A;
   --border-soft: #1F1F1F;
@@ -200,7 +216,8 @@
   background: var(--bg-card);
   border-radius: var(--r-xl);
   padding: clamp(24px, 4vw, 36px);
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out), border-color 0.3s;
   overflow: hidden;
   position: relative;
@@ -244,42 +261,42 @@
 /* Card color variants */
 .card-rose {
   background: var(--card-rose);
-  border-color: transparent;
+  border-color: var(--card-rose-border);
 }
 
 .card-blue {
   background: var(--card-blue);
-  border-color: transparent;
+  border-color: var(--card-blue-border);
 }
 
 .card-mint {
   background: var(--card-mint);
-  border-color: transparent;
+  border-color: var(--card-mint-border);
 }
 
 .card-amber {
   background: var(--card-amber);
-  border-color: transparent;
+  border-color: var(--card-amber-border);
 }
 
 .card-purple {
   background: var(--card-purple);
-  border-color: transparent;
+  border-color: var(--card-purple-border);
 }
 
 .card-orange {
   background: var(--card-orange);
-  border-color: transparent;
+  border-color: var(--card-orange-border);
 }
 
 .card-sky {
   background: var(--card-sky);
-  border-color: transparent;
+  border-color: var(--card-sky-border);
 }
 
 .card-slate {
   background: var(--card-slate);
-  border-color: transparent;
+  border-color: var(--card-slate-border);
 }
 
 /* ── Responsive Bento ── */

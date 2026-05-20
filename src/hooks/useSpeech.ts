@@ -9,6 +9,7 @@ declare global {
 }
 
 interface UseSpeechReturn {
+  isSupported: boolean;
   isListening: boolean;
   startListening: (onResult: (text: string) => void) => void;
   stopListening: () => void;
@@ -28,6 +29,9 @@ export function useSpeech(): UseSpeechReturn {
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isSupported = typeof window !== 'undefined' && 
+    (!!window.SpeechRecognition || !!window.webkitSpeechRecognition);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -136,6 +140,7 @@ export function useSpeech(): UseSpeechReturn {
   }, [stopSpeaking]);
 
   return {
+    isSupported,
     isListening,
     startListening,
     stopListening,

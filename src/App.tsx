@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import { useState, useCallback, lazy, Suspense } from 'react';
+import { useState, useCallback, lazy, Suspense, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTheme } from './hooks/useTheme';
 import WelcomeContent from './components/WelcomeContent';
@@ -54,6 +54,21 @@ export default function App() {
   const [showScanner, setShowScanner] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   const startChat = useCallback((prompt?: string) => {
     setInitialPrompt(prompt);
     setView('chat');
@@ -97,15 +112,40 @@ export default function App() {
 
       {/* ── Floating Pill Navbar ── */}
       <nav className="navbar" role="navigation" aria-label="Navigasi utama" style={{ marginBottom: view === 'welcome' ? 0 : 8 }}>
-        <div className="navbar-inner">
+        <motion.div
+          className="navbar-inner"
+          initial={{ width: 120, opacity: 0 }}
+          animate={{
+            width: '100%',
+            opacity: 1,
+            transitionEnd: { overflow: 'unset' }
+          }}
+          transition={{
+            width: { type: 'spring', stiffness: 90, damping: 16, delay: 0.15 },
+            opacity: { duration: 0.35, delay: 0.15 }
+          }}
+          style={{ overflow: 'hidden', display: 'flex' }}
+        >
           {/* Logo */}
-          <button className="nav-logo" onClick={goHome} aria-label="Kembali ke beranda WargaCheck">
+          <motion.button
+            className="nav-logo"
+            onClick={goHome}
+            aria-label="Kembali ke beranda WargaCheck"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.25 }}
+          >
             <LogoIcon size={24} />
             <span>WargaCheck</span>
-          </button>
+          </motion.button>
 
           {/* Actions */}
-          <div className="nav-actions">
+          <motion.div
+            className="nav-actions"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55, duration: 0.25 }}
+          >
             {/* Status dot */}
             <span className="status-dot" style={{ marginRight: 4 }} aria-label="Status: online" role="status" />
 
@@ -156,8 +196,8 @@ export default function App() {
                 </motion.button>
               )}
             </AnimatePresence>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </nav>
 
       {/* ── Main Content ── */}
@@ -223,6 +263,35 @@ export default function App() {
               onScanComplete={handleScanComplete}
             />
           </Suspense>
+        )}
+      </AnimatePresence>
+
+      {/* ── Offline Banner ── */}
+      <AnimatePresence>
+        {isOffline && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            style={{
+              position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
+              background: '#EF4444', color: 'white', padding: '12px 24px',
+              borderRadius: '9999px', fontSize: 14, fontWeight: 600,
+              display: 'flex', alignItems: 'center', gap: 10,
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)', zIndex: 9999
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+              <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+              <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+              <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+              <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+              <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+              <line x1="12" y1="20" x2="12.01" y2="20"></line>
+            </svg>
+            Koneksi Terputus. AI tidak dapat memproses saat ini.
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
