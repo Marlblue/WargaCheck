@@ -10,6 +10,7 @@ import { sendMessage, sendMessageStream } from '../services/gemini';
 import LogoIcon from './shared/LogoIcon';
 import ChatInput from './ChatInput';
 import { useSpeech } from '../hooks/useSpeech';
+import { cleanMarkdownForShare } from '../utils/formatText';
 
 interface Message {
   id: string;
@@ -38,6 +39,14 @@ const QUICK_REPLIES = [
   'Akta perkawinan',
 ];
 
+function SafeMarkdown({ children }: { children: string }) {
+  try {
+    return <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{children}</ReactMarkdown></div>;
+  } catch {
+    return <div className="md" style={{ whiteSpace: 'pre-wrap' }}>{children}</div>;
+  }
+}
+
 export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProps) {
   const { isSupported, isListening, startListening, stopListening, isPlaying, activeMessageId, speak, stopSpeaking, error: speechError, clearError: clearSpeechError } = useSpeech();
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -65,9 +74,23 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
   const [isStreaming, setIsStreaming] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const didInit = useRef(false);
   const msgIdCounter = useRef(0);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+        const active = document.activeElement;
+        if (active?.tagName !== 'INPUT' && active?.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          inputRef.current?.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -91,7 +114,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
 
   const handleSend = useCallback(async (textToSend: string) => {
     const text = textToSend.trim();
-    if (!text || isLoading) return;
+    if (!text || isLoading || isStreaming) return;
 
     // Haptic feedback on mobile
     if (navigator.vibrate) navigator.vibrate(30);
@@ -104,6 +127,8 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
     setIsStreaming(false);
     setStreamingText('');
 
+    const currentMessages = [...messages, userMsg];
+    
     setTimeout(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -111,7 +136,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
     }, 10);
 
     try {
-      const history = messages.slice(-20).map(m => ({
+      const history = currentMessages.slice(-20).map(m => ({
         role: m.role,
         parts: [{ text: m.text }]
       }));
@@ -168,8 +193,6 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
       setStreamingText('');
       setIsStreaming(false);
       setIsLoading(false);
-    } finally {
-      inputRef.current?.focus();
     }
   }, [messages, isLoading]);
 
@@ -213,6 +236,19 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
     }
   }, [initialMessage]);
 
+  useEffect(() => {
+    if (!showConfirmClear) return;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowConfirmClear(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showConfirmClear]);
+
   const clearHistory = () => {
     setMessages([]);
     localStorage.removeItem(STORAGE_KEY);
@@ -226,7 +262,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
     } catch { return ''; }
   };
 
-  const showQuickReplies = messages.length === 0 && !isLoading;
+  const showQuickReplies = messages.length === 0 && !isLoading && !isStreaming && !initialMessage;
   const hasHistory = messages.length > 0;
 
   return (
@@ -264,7 +300,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
       )}
 
       {/* ── Messages ── */}
-      <div ref={scrollRef} className="chat-messages">
+      <div ref={scrollRef} className="chat-messages" aria-live="polite" aria-atomic="false">
 
         {/* Empty state */}
         {showQuickReplies && (
@@ -376,9 +412,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
                     {isUser ? (
                       <span>{msg.text}</span>
                     ) : (
-                      <div className="md">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
-                      </div>
+                      <SafeMarkdown>{msg.text}</SafeMarkdown>
                     )}
                   </div>
 
@@ -388,7 +422,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
                       <button
                         className="msg-action-btn"
                         onClick={async () => {
-                          const clean = msg.text.replace(/[*#_]/g, '').replace(/-\s*\[\s*\]/g, '☐').replace(/-\s*\[x\]/g, '☑');
+                          const clean = cleanMarkdownForShare(msg.text);
                           try { await navigator.clipboard.writeText(clean); } catch {
                             const t = document.createElement('textarea'); t.value = clean; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t);
                           }
@@ -404,9 +438,9 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
                       <button
                         className="msg-action-btn"
                         onClick={() => {
-                          const clean = msg.text.replace(/[*#_]/g, '').replace(/- \[ \]/g, '☐').replace(/- \[x\]/g, '☑');
+                          const clean = cleanMarkdownForShare(msg.text);
                           const waText = encodeURIComponent(`📋 *WargaCheck — Checklist Dokumen*\n\n${clean}\n\n_Dibantu oleh WargaCheck AI_`);
-                          window.open(`https://wa.me/?text=${waText}`, '_blank');
+                          window.open(`https://wa.me/?text=${waText}`, '_blank', 'noopener,noreferrer');
                         }}
                         aria-label="Bagikan ke WhatsApp"
                         title="Bagikan ke WhatsApp"
@@ -425,9 +459,9 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
                       transition={{ delay: 0.3, duration: 0.3 }}
                       style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}
                     >
-                      {msg.suggestions.map((suggestion, idx) => (
+                      {msg.suggestions.map((suggestion) => (
                         <button
-                          key={idx}
+                          key={suggestion}
                           className="pill"
                           onClick={() => handleSend(suggestion)}
                           disabled={isLoading}
@@ -473,9 +507,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
               <div style={{ maxWidth: '80%' }}>
                 <div className="msg-label">WargaCheck · sedang mengetik...</div>
                 <div className="bubble-ai">
-                  <div className="md">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingText}</ReactMarkdown>
-                  </div>
+                  <SafeMarkdown>{streamingText}</SafeMarkdown>
                   <span style={{
                     display: 'inline-block', width: 2, height: 16,
                     background: 'var(--primary)', marginLeft: 2,
@@ -518,6 +550,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
 
       {/* ── Input bar ── */}
       <ChatInput
+        ref={inputRef}
         input={input}
         setInput={setInput}
         isLoading={isLoading}

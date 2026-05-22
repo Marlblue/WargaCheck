@@ -4,6 +4,8 @@
  */
 import 'dotenv/config';
 import express from 'express';
+import compression from 'compression';
+import crypto from 'crypto';
 import cors from 'cors';
 import helmet from 'helmet';
 import { fileURLToPath } from 'url';
@@ -23,13 +25,17 @@ const upload = multer({
 });
 
 const app = express();
+app.use(compression());
 
 // ── Structured request logging with timing ──
 app.use((req, res, next) => {
+  const requestId = crypto.randomUUID();
+  req.requestId = requestId;
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
     console.log(JSON.stringify({
+      id: requestId,
       ts: new Date().toISOString(),
       method: req.method,
       path: req.path,
@@ -573,6 +579,11 @@ if (process.env.NODE_ENV === 'production') {
       }
     },
   }));
+
+  // API 404 — unknown API routes
+  app.all('/api/*', (_req, res) => {
+    res.status(404).json({ error: 'Endpoint tidak ditemukan.' });
+  });
 
   // SPA fallback — all non-API routes serve index.html
   app.get('*', (_req, res) => {

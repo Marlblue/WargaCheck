@@ -140,7 +140,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker, onOp
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, position: 'relative', zIndex: 1 }}>
-            <button className="btn btn-primary" onClick={() => onQuickTopic('')}>
+            <button className="btn btn-primary" onClick={() => onQuickTopic(undefined as any)}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               Mulai Konsultasi
             </button>
@@ -152,7 +152,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker, onOp
 
         {/* ── 2. CHAT PREVIEW CARD ── */}
         <Reveal className="bento-card col-2 card-blue clickable" delay={0.2} style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
-          <div onClick={() => onQuickTopic('')} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div onClick={() => onQuickTopic(undefined as any)} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <p className="section-label">Konsultasi AI</p>
             <p style={{ fontSize: 'clamp(15px, 2.5vw, 17px)', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: 16 }}>
               Tanya apa saja tentang dokumen kependudukan
@@ -435,7 +435,7 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker, onOp
           padding: '20px 0',
         }}>
           <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
-            © 2026 WargaCheck — <span style={{ color: 'var(--text-secondary)' }}>#JuaraVibeCoding</span>
+            © {new Date().getFullYear()} WargaCheck — <span style={{ color: 'var(--text-secondary)' }}>#JuaraVibeCoding</span>
           </span>
           <span style={{ fontSize: 12, color: 'var(--text-tertiary)', maxWidth: 380, textAlign: 'right', lineHeight: 1.5 }}>
             Informasi bersifat umum. Selalu konfirmasi ke instansi resmi setempat.

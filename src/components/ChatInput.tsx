@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { forwardRef } from 'react';
 
 interface ChatInputProps {
   input: string;
@@ -12,14 +12,15 @@ interface ChatInputProps {
   stopListening: () => void;
 }
 
-export default function ChatInput({
+const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>(({
   input, setInput, isLoading, onSend, onOpenScanner,
   isSupported, isListening, startListening, stopListening
-}: ChatInputProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
+}, ref) => {
   const handleSend = () => {
     onSend(input);
+    if (ref && 'current' in ref && ref.current) {
+      ref.current.style.height = 'auto';
+    }
   };
 
   return (
@@ -37,7 +38,18 @@ export default function ChatInput({
           className="chat-icon-btn"
           onClick={() => {
             if (isListening) { stopListening(); }
-            else { startListening((text) => { setInput(prev => prev ? prev + ' ' + text : text); }); }
+            else {
+              startListening((text) => {
+                setInput(prev => prev ? prev + ' ' + text : text);
+                // Flash the input to indicate voice text was added
+                if (ref && 'current' in ref && ref.current) {
+                  ref.current.style.borderColor = '#22c55e';
+                  setTimeout(() => {
+                    if (ref && 'current' in ref && ref.current) ref.current.style.borderColor = '';
+                  }, 1000);
+                }
+              });
+            }
           }}
           disabled={isLoading}
           aria-label={isListening ? "Hentikan mendengarkan suara" : "Mulai input suara"}
@@ -64,16 +76,27 @@ export default function ChatInput({
         </button>
       )}
 
-      <input
-        ref={inputRef}
-        type="text"
+      <textarea
+        ref={ref}
         value={input}
         onChange={e => setInput(e.target.value)}
-        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+        onKeyDown={e => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+          }
+        }}
         placeholder="Tanya prosedur, syarat, atau checklist..."
         disabled={isLoading}
         className="chat-input"
         aria-label="Ketik pertanyaan tentang dokumen kependudukan"
+        rows={1}
+        style={{ resize: 'none', overflow: 'hidden' }}
+        onInput={e => {
+          const target = e.target as HTMLTextAreaElement;
+          target.style.height = 'auto';
+          target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+        }}
       />
 
       <button
@@ -94,4 +117,6 @@ export default function ChatInput({
       </button>
     </div>
   );
-}
+});
+
+export default ChatInput;

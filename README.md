@@ -46,7 +46,7 @@ Landing page modern dengan layout bento grid — card-card interaktif dengan war
 |---|---|
 | Frontend | React 19 + TypeScript + Vite |
 | Styling | CSS Custom Properties + Tailwind CSS v4 |
-| Animation | Framer Motion (motion/react) |
+| Animation | Motion (motion/react) |
 | AI Model | Google Gemini 2.5 Flash |
 | AI Vision | Google Gemini 2.5 Flash (Multimodal) |
 | Backend | Express 4 + Node.js |

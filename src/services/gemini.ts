@@ -27,7 +27,8 @@ async function handleErrorResponse(res: Response): Promise<never> {
   const err = await res.json().catch(() => ({}));
 
   if (res.status === 429) {
-    throw new Error(err.error || 'Terlalu banyak permintaan. Tunggu sebentar sebelum mencoba lagi.');
+    const retryAfter = err.retryAfter || 60;
+    throw new Error(err.error || `Terlalu banyak permintaan. Coba lagi dalam ${retryAfter} detik.`);
   }
   if (res.status === 504) {
     throw new Error(err.error || 'AI sedang sibuk. Coba lagi dalam beberapa detik.');

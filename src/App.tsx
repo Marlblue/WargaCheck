@@ -70,7 +70,7 @@ export default function App() {
   }, []);
 
   const startChat = useCallback((prompt?: string) => {
-    setInitialPrompt(prompt);
+    setInitialPrompt(prompt || undefined);
     setView('chat');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
@@ -92,9 +92,12 @@ export default function App() {
 
   const handleScanComplete = useCallback((result: string) => {
     setShowScanner(false);
-    setInitialPrompt(`Saya sudah scan dokumen. Hasil scan:\n\n${result}\n\nTolong bantu saya lanjutkan prosesnya.`);
-    setView('chat');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Small delay for modal close animation to complete
+    setTimeout(() => {
+      setInitialPrompt(`Saya sudah scan dokumen. Hasil scan:\n\n${result}\n\nTolong bantu saya lanjutkan prosesnya.`);
+      setView('chat');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 300);
   }, []);
 
   return (
@@ -278,7 +281,8 @@ export default function App() {
               background: '#EF4444', color: 'white', padding: '12px 24px',
               borderRadius: '9999px', fontSize: 14, fontWeight: 600,
               display: 'flex', alignItems: 'center', gap: 10,
-              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)', zIndex: 9999
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)', zIndex: 9999,
+              maxWidth: '90vw', textAlign: 'center'
             }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -30,6 +30,15 @@ export function useSpeech(): UseSpeechReturn {
   const recognitionRef = useRef<any>(null);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  useEffect(() => {
+    if (!window.speechSynthesis) return;
+    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
+    loadVoices();
+    window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+  }, []);
+
   const isSupported = typeof window !== 'undefined' && 
     (!!window.SpeechRecognition || !!window.webkitSpeechRecognition);
 
@@ -116,7 +125,7 @@ export function useSpeech(): UseSpeechReturn {
     utterance.lang = 'id-ID';
     
     // Coba pilih suara bahasa Indonesia jika tersedia (opsional)
-    const voices = window.speechSynthesis.getVoices();
+    // Use the cached voices from state
     const idVoice = voices.find(v => v.lang === 'id-ID' || v.lang === 'id_ID');
     if (idVoice) utterance.voice = idVoice;
 
@@ -136,7 +145,7 @@ export function useSpeech(): UseSpeechReturn {
     };
 
     window.speechSynthesis.speak(utterance);
-  }, [stopSpeaking, showError]);
+  }, [stopSpeaking, showError, voices]);
 
   // Clean up saat komponen di-unmount
   useEffect(() => {

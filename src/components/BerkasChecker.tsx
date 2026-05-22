@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { motion, AnimatePresence } from 'motion/react';
 import { checkBerkas } from '../services/gemini';
+import { cleanMarkdownForShare } from '../utils/formatText';
 
 const JENIS_LAYANAN = [
   'KTP Elektronik', 'Kartu Keluarga (KK)', 'Akta Kelahiran', 'Akta Kematian',
@@ -51,6 +52,7 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
   const [statusNikah, setStatusNikah] = useState('');
   const [kewarganegaraan, setKewarganegaraan] = useState('WNI');
   const [result, setResult] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [totalCheckboxes, setTotalCheckboxes] = useState(0);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -72,14 +74,14 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
       setStep(2);
     } catch (err: unknown) {
       const errorText = err instanceof Error ? err.message : 'Terjadi kesalahan. Coba lagi.';
-      setResult(errorText);
+      setError(errorText);
       setStep(2);
     }
   };
 
   const handleReset = () => {
     setStep(0); setJenisLayanan(''); setKeperluan(''); setStatusNikah('');
-    setKewarganegaraan('WNI'); setResult(''); setCheckedItems(new Set<string>()); setTotalCheckboxes(0);
+    setKewarganegaraan('WNI'); setResult(''); setError(null); setCheckedItems(new Set<string>()); setTotalCheckboxes(0);
   };
 
   const toggleCheck = (key: string) => {
@@ -102,11 +104,7 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
   }, [progress]);
 
   const handleCopyChecklist = useCallback(async () => {
-    const text = result
-      .replace(/- \[ \]/g, (match) => '☐')
-      .replace(/- \[x\]/g, '☑')
-      .replace(/\*\*/g, '')
-      .replace(/#{1,3}\s?/g, '');
+    const text = cleanMarkdownForShare(result);
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -213,94 +211,115 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
           {/* ── STEP 2: Result ── */}
           {step === 2 && (
             <motion.div key="result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} ref={resultRef}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <h3 style={{ fontSize: 'clamp(16px, 3.5vw, 18px)', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>Checklist Berkas</h3>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{jenisLayanan} — {keperluan} — {statusNikah}</p>
-                </div>
-                <button onClick={handleReset} className="btn btn-outline" style={{ padding: '8px 14px', fontSize: 13, minHeight: 36 }}>Cek lagi</button>
-                <button
-                  onClick={handleCopyChecklist}
-                  className={`copy-btn ${copied ? 'copied' : ''}`}
-                >
-                  {copied ? (
-                    <>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><path d="M22 4L12 14.01l-3-3" /></svg>
-                      Tersalin!
-                    </>
-                  ) : (
-                    <>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
-                      Salin
-                    </>
-                  )}
-                </button>
-                <button
-                  className="share-btn"
-                  onClick={() => {
-                    const clean = result.replace(/\*\*/g, '*').replace(/#{1,3}\s?/g, '').replace(/- \[ \]/g, '☐').replace(/- \[x\]/g, '☑');
-                    const waText = encodeURIComponent(`📋 *Checklist ${jenisLayanan} — ${keperluan}*\n\n${clean}\n\n_Dibuat oleh WargaCheck AI_`);
-                    window.open(`https://wa.me/?text=${waText}`, '_blank');
-                  }}
-                  aria-label="Bagikan checklist ke WhatsApp"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                  WhatsApp
-                </button>
-              </div>
-
-              {/* Progress bar */}
-              {totalCheckboxes > 0 && (
-                <div style={{ marginBottom: 24 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Kesiapan berkas</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: progress === 100 ? '#22c55e' : 'var(--primary)' }}>
-                      {checkedItems.size}/{totalCheckboxes}
-                    </span>
-                  </div>
-                  <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'var(--border-soft)', overflow: 'hidden' }}>
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: 'easeOut' }}
-                      style={{ height: '100%', borderRadius: 2, background: progress === 100 ? '#22c55e' : 'var(--primary)', transition: 'background 0.3s' }} />
-                  </div>
-                  {progress === 100 && (
-                    <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                      style={{ fontSize: 13, color: '#22c55e', fontWeight: 600, margin: '10px 0 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><path d="M22 4L12 14.01l-3-3" />
-                      </svg>
-                      Semua berkas siap. Kamu bisa datang ke kantor.
-                    </motion.p>
-                  )}
+              
+              {error && (
+                <div style={{
+                  padding: 20, textAlign: 'center', borderRadius: 'var(--r-md)',
+                  background: 'var(--primary-soft)', border: '1px solid var(--primary)',
+                  marginBottom: 16,
+                }}>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>
+                    Gagal membuat checklist
+                  </p>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 16px' }}>{error}</p>
+                  <button onClick={handleReset} className="btn btn-primary" style={{ fontSize: 13 }}>
+                    Coba Lagi
+                  </button>
                 </div>
               )}
 
-              {/* Confetti celebration */}
-              {showConfetti && (
-                <div className="confetti-container" aria-hidden="true">
-                  {Array.from({ length: 40 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="confetti-piece"
-                      style={{
-                        '--confetti-x': `${5 + Math.random() * 90}%`,
-                        '--confetti-delay': `${Math.random() * 0.8}s`,
-                        '--confetti-color': ['#E63946', '#22c55e', '#F97316', '#8B5CF6', '#3B82F6', '#EC4899'][i % 6],
-                        '--confetti-drift': `${Math.random()}`,
-                      } as React.CSSProperties}
-                    />
-                  ))}
-                </div>
-              )}
+              {!error && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h3 style={{ fontSize: 'clamp(16px, 3.5vw, 18px)', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>Checklist Berkas</h3>
+                      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{jenisLayanan} — {keperluan} — {statusNikah}</p>
+                    </div>
+                    <button onClick={handleReset} className="btn btn-outline" style={{ padding: '8px 14px', fontSize: 13, minHeight: 36 }}>Cek lagi</button>
+                    <button
+                      onClick={handleCopyChecklist}
+                      className={`copy-btn ${copied ? 'copied' : ''}`}
+                    >
+                      {copied ? (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><path d="M22 4L12 14.01l-3-3" /></svg>
+                          Tersalin!
+                        </>
+                      ) : (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" /></svg>
+                          Salin
+                        </>
+                      )}
+                    </button>
+                    <button
+                      className="share-btn"
+                      onClick={() => {
+                        const clean = cleanMarkdownForShare(result);
+                        const waText = encodeURIComponent(`📋 *Checklist ${jenisLayanan} — ${keperluan}*\n\n${clean}\n\n_Dibuat oleh WargaCheck AI_`);
+                        window.open(`https://wa.me/?text=${waText}`, '_blank', 'noopener,noreferrer');
+                      }}
+                      aria-label="Bagikan checklist ke WhatsApp"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                      WhatsApp
+                    </button>
+                  </div>
 
-              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
-                <div className="md berkas-result">
-                  <BerkasMarkdown content={result} checkedItems={checkedItems} onToggle={toggleCheck} />
-                </div>
-              </div>
-              <p style={{ fontSize: 12, color: 'var(--text-tertiary)', textAlign: 'center', padding: '20px 0 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
-                Gunakan tombol "Salin Checklist" di atas untuk menyimpan.
-              </p>
+                  {/* Progress bar */}
+                  {totalCheckboxes > 0 && (
+                    <div style={{ marginBottom: 24 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Kesiapan berkas</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: progress === 100 ? '#22c55e' : 'var(--primary)' }}>
+                          {checkedItems.size}/{totalCheckboxes}
+                        </span>
+                      </div>
+                      <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'var(--border-soft)', overflow: 'hidden' }}>
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: 'easeOut' }}
+                          style={{ height: '100%', borderRadius: 2, background: progress === 100 ? '#22c55e' : 'var(--primary)', transition: 'background 0.3s' }} />
+                      </div>
+                      {progress === 100 && (
+                        <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                          style={{ fontSize: 13, color: '#22c55e', fontWeight: 600, margin: '10px 0 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><path d="M22 4L12 14.01l-3-3" />
+                          </svg>
+                          Semua berkas siap. Kamu bisa datang ke kantor.
+                        </motion.p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Confetti celebration */}
+                  {showConfetti && (
+                    <div className="confetti-container" aria-hidden="true">
+                      {Array.from({ length: 40 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="confetti-piece"
+                          style={{
+                            '--confetti-x': `${5 + Math.random() * 90}%`,
+                            '--confetti-delay': `${Math.random() * 0.8}s`,
+                            '--confetti-color': ['#E63946', '#22c55e', '#F97316', '#8B5CF6', '#3B82F6', '#EC4899'][i % 6],
+                            '--confetti-drift': `${Math.random()}`,
+                          } as React.CSSProperties}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                    <div className="md berkas-result">
+                      <BerkasMarkdown content={result} checkedItems={checkedItems} onToggle={toggleCheck} />
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', textAlign: 'center', padding: '20px 0 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                    Gunakan tombol "Salin Checklist" di atas untuk menyimpan.
+                  </p>
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -311,11 +330,14 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
 
 /* ── Markdown renderer with interactive checkboxes ── */
 function BerkasMarkdown({ content, checkedItems, onToggle }: { content: string; checkedItems: Set<string>; onToggle: (key: string) => void }) {
-  let checkboxCounter = 0;
+  const counterRef = useRef(0);
+  // Reset counter at the start of each render
+  counterRef.current = 0;
   function getCheckboxKey(childrenText: string): string {
+    counterRef.current++;
     const cleaned = childrenText.replace(/\[[ x]\]\s*/g, '').trim();
     if (cleaned.length > 0) return cleaned.slice(0, 80);
-    return `cb-${checkboxCounter}`;
+    return `cb-${counterRef.current}`;
   }
 
   return (
@@ -324,7 +346,6 @@ function BerkasMarkdown({ content, checkedItems, onToggle }: { content: string; 
         const text = Array.isArray(children) ? children.map(c => typeof c === 'string' ? c : '').join('') : String(children);
         const isCheckbox = className?.includes('task-list-item') || text.includes('[ ]') || text.includes('[x]');
         if (isCheckbox) {
-          checkboxCounter++;
           const key = getCheckboxKey(text);
           const isChecked = checkedItems.has(key);
           return (

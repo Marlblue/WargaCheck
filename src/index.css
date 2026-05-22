@@ -1124,6 +1124,12 @@ textarea:focus-visible {
     transform: none;
     box-shadow: none;
   }
+
+  .bubble-user:hover,
+  .bubble-ai:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 /* ══════════════════════════════════════════════

@@ -25,6 +25,19 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
     return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
   }, [previewUrl]);
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -130,16 +143,17 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
                   ))}
                   <div style={{
                     marginTop: 20, padding: '12px 16px', background: 'var(--card-mint)', 
-                    borderRadius: 'var(--r-md)', border: '1px solid #86EFAC',
-                    display: 'flex', gap: 12, alignItems: 'flex-start'
+                    borderRadius: 'var(--r-md)', border: '1px solid var(--card-mint-border)',
+                    display: 'flex', gap: 12, alignItems: 'flex-start',
+                    color: '#16A34A'
                   }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                       <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                     </svg>
                     <div>
-                      <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: '#166534' }}>Privasi Anda Terjamin 100%</p>
-                      <p style={{ margin: 0, fontSize: 12, color: '#15803D', lineHeight: 1.5 }}>
+                      <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Privasi Anda Terjamin 100%</p>
+                      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                         Foto yang diunggah <strong>tidak pernah disimpan</strong> di database kami. Diproses sesaat oleh AI di memori dan langsung dihapus permanen.
                       </p>
                     </div>
@@ -153,7 +167,7 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
               <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center', padding: '20px 0' }}>
                 {previewUrl && (
                   <div style={{ width: '100%', maxHeight: 180, borderRadius: 'var(--r-md)', overflow: 'hidden', marginBottom: 24, border: '1px solid var(--border)' }}>
-                    <img src={previewUrl} alt="Preview" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
+                    <img src={previewUrl} alt="Preview" loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
                   </div>
                 )}
                 <div style={{ width: 56, height: 56, margin: '0 auto 20px', borderRadius: '50%', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', animation: 'spin 0.8s linear infinite' }} />
@@ -179,7 +193,7 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
               <motion.div key="result" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 {previewUrl && (
                   <div style={{ width: '100%', height: 120, borderRadius: 'var(--r-md)', overflow: 'hidden', marginBottom: 16, border: '1px solid var(--border)' }}>
-                    <img src={previewUrl} alt="Scanned" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <img src={previewUrl} alt="Scanned" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   </div>
                 )}
                 <div style={{ background: 'var(--border-soft)', borderRadius: 'var(--r-md)', padding: 16, marginBottom: 16, fontSize: 14, lineHeight: 1.6, color: 'var(--text-primary)', maxHeight: 300, overflowY: 'auto' }}>
