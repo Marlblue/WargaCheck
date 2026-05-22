@@ -9,9 +9,18 @@ import helmet from 'helmet';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { GoogleGenAI } from '@google/genai';
+import { rateLimit } from 'express-rate-limit';
+import { RedisStore } from 'rate-limit-redis';
+import Redis from 'ioredis';
+import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+});
 
 const app = express();
 
@@ -77,40 +86,30 @@ const LIMITS = {
   scan: { max: 8, windowMs: 60_000 },
 };
 
-// ── Rate Limiting (in-memory, per-endpoint) ──
-const rateMaps = {
-  chat: new Map(),
-  berkas: new Map(),
-  scan: new Map(),
-};
-
-setInterval(() => {
-  const now = Date.now();
-  for (const map of Object.values(rateMaps)) {
-    for (const [ip, entry] of map.entries()) {
-      if (now > entry.reset) map.delete(ip);
-    }
-  }
-}, 60_000);
+// ── Rate Limiting (Redis fallback to in-memory) ──
+let redisClient;
+if (process.env.REDIS_URL) {
+  redisClient = new Redis(process.env.REDIS_URL);
+  console.log('[RateLimit] Using Redis store');
+} else {
+  console.log('[RateLimit] Using Memory store (REDIS_URL not set)');
+}
 
 function createRateLimiter(endpoint) {
-  const map = rateMaps[endpoint];
   const limit = LIMITS[endpoint];
-  return (req, res, next) => {
-    const ip = req.ip || req.socket?.remoteAddress || 'unknown';
-    const now = Date.now();
-    const entry = map.get(ip);
-
-    if (!entry || now > entry.reset) {
-      map.set(ip, { count: 1, reset: now + limit.windowMs });
-      return next();
-    }
-    if (entry.count >= limit.max) {
-      return res.status(429).json({ error: 'Terlalu banyak permintaan. Coba lagi dalam 1 menit.' });
-    }
-    entry.count++;
-    next();
-  };
+  return rateLimit({
+    windowMs: limit.windowMs,
+    limit: limit.max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    store: redisClient ? new RedisStore({
+      sendCommand: (...args) => redisClient.call(...args),
+      prefix: `rl:${endpoint}:`,
+    }) : undefined,
+    handler: (req, res, next, options) => {
+      res.status(options.statusCode).json({ error: 'Terlalu banyak permintaan. Coba lagi dalam 1 menit.', retryAfter: Math.ceil(limit.windowMs / 1000) });
+    },
+  });
 }
 
 // ── CSRF Protection (origin check for mutating requests) ──
@@ -265,16 +264,12 @@ const API_KEYS = [
 if (API_KEYS.length === 0) throw new Error('Tidak ada GEMINI_API_KEY yang di-set');
 console.log(`[KeyManager] ${API_KEYS.length} API key(s) loaded`);
 
-const keyCooldowns = new Map(); // { "key:model": cooldownUntilMs }
+let currentKeyIndex = 0;
 
-function getAvailableKey(model) {
-  const now = Date.now();
-  return API_KEYS.find(key => (keyCooldowns.get(`${key}:${model}`) ?? 0) < now) ?? null;
-}
-
-function markKeyCooldown(key, model, retryAfterSeconds = 60) {
-  keyCooldowns.set(`${key}:${model}`, Date.now() + retryAfterSeconds * 1_000);
-  console.log(`[KeyManager] Key #${API_KEYS.indexOf(key) + 1} for ${model} cooldown ${retryAfterSeconds}s`);
+function getNextKey() {
+  const key = API_KEYS[currentKeyIndex];
+  currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
+  return key;
 }
 
 const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
@@ -304,47 +299,37 @@ function extractRetryAfter(err) {
 
 async function callWithFallback(options, timeoutMs = GEMINI_TIMEOUT_MS) {
   for (const model of MODELS) {
-    for (let attempt = 0; attempt < API_KEYS.length; attempt++) {
-      const key = getAvailableKey(model);
-      if (!key) break;
-      try {
-        const genai = new GoogleGenAI({ apiKey: key });
-        return await Promise.race([
-          genai.models.generateContent({ ...options, model }),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('TIMEOUT')), timeoutMs)
-          ),
-        ]);
-      } catch (err) {
-        if (isRateLimitError(err)) {
-          markKeyCooldown(key, model, extractRetryAfter(err));
-          continue;
-        }
+    const key = getNextKey();
+    try {
+      const genai = new GoogleGenAI({ apiKey: key });
+      return await Promise.race([
+        genai.models.generateContent({ ...options, model }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('TIMEOUT')), timeoutMs)
+        ),
+      ]);
+    } catch (err) {
+      if (isRateLimitError(err)) {
         throw err;
       }
+      if (model === MODELS[MODELS.length - 1]) throw err;
     }
   }
-  throw Object.assign(new Error('RESOURCE_EXHAUSTED'), { status: 429 });
 }
 
 async function streamWithFallback(options) {
   for (const model of MODELS) {
-    for (let attempt = 0; attempt < API_KEYS.length; attempt++) {
-      const key = getAvailableKey(model);
-      if (!key) break;
-      try {
-        const genai = new GoogleGenAI({ apiKey: key });
-        return await genai.models.generateContentStream({ ...options, model });
-      } catch (err) {
-        if (isRateLimitError(err)) {
-          markKeyCooldown(key, model, extractRetryAfter(err));
-          continue;
-        }
+    const key = getNextKey();
+    try {
+      const genai = new GoogleGenAI({ apiKey: key });
+      return await genai.models.generateContentStream({ ...options, model });
+    } catch (err) {
+      if (isRateLimitError(err)) {
         throw err;
       }
+      if (model === MODELS[MODELS.length - 1]) throw err;
     }
   }
-  throw Object.assign(new Error('RESOURCE_EXHAUSTED'), { status: 429 });
 }
 
 // ── API Routes ──
@@ -513,27 +498,17 @@ app.post('/api/check-berkas', createRateLimiter('berkas'), async (req, res) => {
 });
 
 // Document scan endpoint (Gemini Vision)
-app.use('/api/scan', express.json({ limit: '10mb' }));
-app.post('/api/scan', createRateLimiter('scan'), async (req, res) => {
+app.post('/api/scan', upload.single('image'), createRateLimiter('scan'), async (req, res) => {
   try {
-    const { image, mimeType } = req.body;
-
-    if (!image || typeof image !== 'string') {
+    if (!req.file) {
       return res.status(400).json({ error: 'Foto dokumen diperlukan.' });
     }
 
-    // Strip data URL prefix if present
-    const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
-
-    // Check size (base64 is ~33% larger than binary)
-    const sizeInMB = (base64Data.length * 3 / 4) / (1024 * 1024);
-    if (sizeInMB > MAX_BASE64_SIZE_MB) {
-      return res.status(400).json({ error: `Ukuran foto terlalu besar (maks ${MAX_BASE64_SIZE_MB}MB).` });
-    }
-
+    const mimeType = req.file.mimetype;
     const safeMimeType = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'].includes(mimeType)
       ? mimeType : 'image/jpeg';
-
+      
+    const base64Data = req.file.buffer.toString('base64');
 
     const response = await callWithFallback({
       contents: [{

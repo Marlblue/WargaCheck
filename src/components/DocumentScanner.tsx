@@ -43,9 +43,7 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
     setIsScanning(true);
     setScanResult(null);
     try {
-      const base64 = await fileToBase64(file);
-      const mimeType = file.type || 'image/jpeg';
-      const result = await scanDocument(base64, mimeType);
+      const result = await scanDocument(file);
       setScanResult(result);
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Gagal menganalisis dokumen. Coba lagi.';
@@ -53,15 +51,6 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
     } finally {
       setIsScanning(false);
     }
-  };
-
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
   };
 
   const handleUseScanResult = () => { if (scanResult) { onScanComplete(scanResult); onClose(); } };

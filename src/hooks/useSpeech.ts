@@ -50,32 +50,40 @@ export function useSpeech(): UseSpeechReturn {
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'id-ID'; // Bahasa Indonesia
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'id-ID'; // Bahasa Indonesia
+      recognition.continuous = false;
+      recognition.interimResults = false;
 
-    recognition.onstart = () => setIsListening(true);
-    
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      onResult(transcript);
-    };
+      recognition.onstart = () => setIsListening(true);
+      
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        onResult(transcript);
+      };
 
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error', event.error);
-      if (event.error === 'not-allowed') {
-        showError('Izin mikrofon ditolak. Aktifkan di pengaturan browser.');
-      } else if (event.error === 'no-speech') {
-        showError('Tidak ada suara terdeteksi. Coba lagi.');
-      }
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error', event.error);
+        if (event.error === 'not-allowed') {
+          showError('Izin mikrofon ditolak. Aktifkan di pengaturan browser.');
+        } else if (event.error === 'no-speech') {
+          showError('Tidak ada suara terdeteksi. Coba lagi.');
+        } else {
+          showError(`Terjadi kesalahan pada fitur suara (${event.error}).`);
+        }
+        setIsListening(false);
+      };
+
+      recognition.onend = () => setIsListening(false);
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error('Failed to start SpeechRecognition:', err);
+      showError('Browser ini tidak mendukung fitur suara secara penuh.');
       setIsListening(false);
-    };
-
-    recognition.onend = () => setIsListening(false);
-
-    recognitionRef.current = recognition;
-    recognition.start();
+    }
   }, [showError]);
 
   const stopListening = useCallback(() => {

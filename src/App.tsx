@@ -147,7 +147,7 @@ export default function App() {
             transition={{ delay: 0.55, duration: 0.25 }}
           >
             {/* Status dot */}
-            <span className="status-dot" style={{ marginRight: 4 }} aria-label="Status: online" role="status" />
+            <span className={`status-dot ${isOffline ? 'offline' : ''}`} style={{ marginRight: 4 }} aria-label={isOffline ? "Status: offline" : "Status: online"} role="status" />
 
             {/* Theme toggle */}
             <button

@@ -26,22 +26,22 @@
   --text-on-primary: #FFFFFF;
 
   /* ── Bento Card Pastel Palettes ── */
-  --card-rose: #FFF1F2;
-  --card-rose-border: #FECDD3;
-  --card-blue: #EFF6FF;
-  --card-blue-border: #BFDBFE;
-  --card-mint: #ECFDF5;
-  --card-mint-border: #A7F3D0;
-  --card-amber: #FFFBEB;
-  --card-amber-border: #FDE68A;
-  --card-purple: #F5F3FF;
-  --card-purple-border: #DDD6FE;
-  --card-orange: #FFF7ED;
-  --card-orange-border: #FED7AA;
-  --card-sky: #F0F9FF;
-  --card-sky-border: #BAE6FD;
-  --card-slate: #F8FAFC;
-  --card-slate-border: #E2E8F0;
+  --card-rose: linear-gradient(145deg, #ffffff 0%, #fff5f6 100%);
+  --card-rose-border: #fce7eb;
+  --card-blue: linear-gradient(145deg, #ffffff 0%, #f5f9ff 100%);
+  --card-blue-border: #e5efff;
+  --card-mint: linear-gradient(145deg, #ffffff 0%, #f2fdf7 100%);
+  --card-mint-border: #dcf5e8;
+  --card-amber: linear-gradient(145deg, #ffffff 0%, #fffcf5 100%);
+  --card-amber-border: #fdf3db;
+  --card-purple: linear-gradient(145deg, #ffffff 0%, #faf8ff 100%);
+  --card-purple-border: #ece5f8;
+  --card-orange: linear-gradient(145deg, #ffffff 0%, #fff9f5 100%);
+  --card-orange-border: #faebde;
+  --card-sky: linear-gradient(145deg, #ffffff 0%, #f5fbff 100%);
+  --card-sky-border: #e0f2fa;
+  --card-slate: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  --card-slate-border: #e2e8f0;
 
   /* ── Border ── */
   --border: #E5E7EB;
@@ -55,11 +55,11 @@
   --r-pill: 9999px;
 
   /* ── Shadows ── */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.1);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.08);
 
   /* ── Transitions ── */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -1178,11 +1178,31 @@ textarea:focus-visible {
    MISC UTILITIES
    ══════════════════════════════════════════════ */
 .status-dot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #22c55e;
   display: inline-block;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  animation: pulse-online 2s infinite;
+}
+
+.status-dot.offline {
+  background: #ef4444;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: pulse-offline 2s infinite;
+}
+
+@keyframes pulse-online {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+@keyframes pulse-offline {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
 .text-gradient {

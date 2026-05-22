@@ -170,16 +170,17 @@ export async function checkBerkas(
 }
 
 export async function scanDocument(
-  imageBase64: string,
-  mimeType: string = 'image/jpeg',
+  file: File,
 ): Promise<string> {
   let res: Response;
+  
+  const formData = new FormData();
+  formData.append('image', file);
 
   try {
     res = await fetchWithTimeout('/api/scan', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: imageBase64, mimeType }),
+      body: formData,
     }, 50_000); // longer timeout for vision
   } catch (err: unknown) {
     if (err instanceof DOMException && err.name === 'AbortError') {
