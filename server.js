@@ -387,7 +387,10 @@ app.post('/api/chat', createRateLimiter('chat'), async (req, res) => {
     }
     if (isRateLimitError(err)) {
       const retryAfter = extractRetryAfter(err);
-      return res.status(429).json({ error: `Kuota AI habis. Coba lagi dalam ${retryAfter} detik.`, retryAfter });
+      let timeStr = `${retryAfter} detik`;
+      if (retryAfter > 3600) timeStr = `${Math.ceil(retryAfter / 3600)} jam`;
+      else if (retryAfter > 60) timeStr = `${Math.ceil(retryAfter / 60)} menit`;
+      return res.status(429).json({ error: `Kuota AI habis. Coba lagi dalam ${timeStr}.`, retryAfter });
     }
     res.status(500).json({ error: 'Gagal memproses permintaan. Coba lagi.' });
   }
@@ -440,6 +443,7 @@ app.post('/api/chat/stream', createRateLimiter('chat'), async (req, res) => {
       const text = chunk.text;
       if (text) {
         res.write(`data: ${JSON.stringify({ text })}\n\n`);
+        if (res.flush) res.flush(); // Force send chunk
       }
     }
 
@@ -454,7 +458,10 @@ app.post('/api/chat/stream', createRateLimiter('chat'), async (req, res) => {
       errorMsg = 'AI sedang sibuk. Coba lagi dalam beberapa detik.';
     } else if (isRateLimitError(err)) {
       const retryAfter = extractRetryAfter(err);
-      errorMsg = `Kuota AI habis. Coba lagi dalam ${retryAfter} detik.`;
+      let timeStr = `${retryAfter} detik`;
+      if (retryAfter > 3600) timeStr = `${Math.ceil(retryAfter / 3600)} jam`;
+      else if (retryAfter > 60) timeStr = `${Math.ceil(retryAfter / 60)} menit`;
+      errorMsg = `Kuota AI habis. Coba lagi dalam ${timeStr}.`;
     }
     // If headers already sent, send as SSE event
     if (res.headersSent) {
@@ -506,7 +513,10 @@ app.post('/api/check-berkas', createRateLimiter('berkas'), async (req, res) => {
     }
     if (isRateLimitError(err)) {
       const retryAfter = extractRetryAfter(err);
-      return res.status(429).json({ error: `Kuota AI habis. Coba lagi dalam ${retryAfter} detik.`, retryAfter });
+      let timeStr = `${retryAfter} detik`;
+      if (retryAfter > 3600) timeStr = `${Math.ceil(retryAfter / 3600)} jam`;
+      else if (retryAfter > 60) timeStr = `${Math.ceil(retryAfter / 60)} menit`;
+      return res.status(429).json({ error: `Kuota AI habis. Coba lagi dalam ${timeStr}.`, retryAfter });
     }
     res.status(500).json({ error: 'Gagal memproses permintaan. Coba lagi.' });
   }
@@ -547,7 +557,10 @@ app.post('/api/scan', upload.single('image'), createRateLimiter('scan'), async (
     }
     if (isRateLimitError(err)) {
       const retryAfter = extractRetryAfter(err);
-      return res.status(429).json({ error: `Kuota AI habis. Coba lagi dalam ${retryAfter} detik.`, retryAfter });
+      let timeStr = `${retryAfter} detik`;
+      if (retryAfter > 3600) timeStr = `${Math.ceil(retryAfter / 3600)} jam`;
+      else if (retryAfter > 60) timeStr = `${Math.ceil(retryAfter / 60)} menit`;
+      return res.status(429).json({ error: `Kuota AI habis. Coba lagi dalam ${timeStr}.`, retryAfter });
     }
     res.status(500).json({ error: 'Gagal menganalisis dokumen. Coba lagi.' });
   }
