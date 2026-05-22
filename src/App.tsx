@@ -234,7 +234,7 @@ export default function App() {
               style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
             >
               <Suspense fallback={<LoadingFallback />}>
-                <Chat initialMessage={initialPrompt} onBack={goHome} />
+                <Chat initialMessage={initialPrompt} onBack={goHome} onOpenScanner={openScanner} />
               </Suspense>
             </motion.div>
           ) : (

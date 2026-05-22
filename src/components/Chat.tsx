@@ -8,7 +8,6 @@ import remarkGfm from 'remark-gfm';
 import { motion, AnimatePresence } from 'motion/react';
 import { sendMessage, sendMessageStream } from '../services/gemini';
 import LogoIcon from './shared/LogoIcon';
-import DocumentScanner from './DocumentScanner';
 import ChatInput from './ChatInput';
 import { useSpeech } from '../hooks/useSpeech';
 
@@ -23,6 +22,7 @@ interface Message {
 interface ChatProps {
   initialMessage?: string;
   onBack: () => void;
+  onOpenScanner: () => void;
 }
 
 const STORAGE_KEY = 'wargacheck_history';
@@ -38,7 +38,7 @@ const QUICK_REPLIES = [
   'Akta perkawinan',
 ];
 
-export default function Chat({ initialMessage, onBack }: ChatProps) {
+export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProps) {
   const { isSupported, isListening, startListening, stopListening, isPlaying, activeMessageId, speak, stopSpeaking, error: speechError, clearError: clearSpeechError } = useSpeech();
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
@@ -63,7 +63,6 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [showScanner, setShowScanner] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -523,7 +522,7 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
         setInput={setInput}
         isLoading={isLoading}
         onSend={handleSend}
-        onOpenScanner={() => setShowScanner(true)}
+        onOpenScanner={onOpenScanner}
         isSupported={isSupported}
         isListening={isListening}
         startListening={startListening}
@@ -534,18 +533,6 @@ export default function Chat({ initialMessage, onBack }: ChatProps) {
       <p className="chat-disclaimer">
         Informasi bersifat umum — konfirmasi ke instansi resmi setempat untuk kepastian.
       </p>
-
-      {/* Document Scanner Modal */}
-      <AnimatePresence>
-        {showScanner && (
-          <DocumentScanner
-            onClose={() => setShowScanner(false)}
-            onScanComplete={(result) => {
-              handleSend(`Saya sudah scan dokumen. Hasil scan:\n\n${result}\n\nTolong bantu saya lanjutkan prosesnya.`);
-            }}
-          />
-        )}
-      </AnimatePresence>
 
       {/* Confirmation Dialog */}
       <AnimatePresence>
