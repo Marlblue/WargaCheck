@@ -538,6 +538,17 @@ app.post('/api/scan', upload.single('image'), createRateLimiter('scan'), async (
   }
 });
 
+// Handle Multer errors (file too large, wrong type, etc.)
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ error: 'File terlalu besar. Maksimum 10MB.' });
+    }
+    return res.status(400).json({ error: 'Upload gagal. Coba lagi.' });
+  }
+  next(err);
+});
+
 // ── Serve static files in production ──
 if (process.env.NODE_ENV === 'production') {
   // Hashed assets get long cache (1 year)
