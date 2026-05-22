@@ -111,7 +111,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
     }, 10);
 
     try {
-      const history = messages.map(m => ({
+      const history = messages.slice(-20).map(m => ({
         role: m.role,
         parts: [{ text: m.text }]
       }));
