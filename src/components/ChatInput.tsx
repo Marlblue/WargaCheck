@@ -86,7 +86,7 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>(({
             handleSend();
           }
         }}
-        placeholder="Tanya prosedur, syarat, atau checklist..."
+        placeholder="Tanya prosedur dokumen..."
         disabled={isLoading}
         className="chat-input"
         aria-label="Ketik pertanyaan tentang dokumen kependudukan"

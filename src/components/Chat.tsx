@@ -254,7 +254,6 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
   const clearHistory = () => {
     setMessages([]);
     localStorage.removeItem(STORAGE_KEY);
-    didInit.current = false;
     setShowConfirmClear(false);
   };
 
@@ -264,7 +263,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
     } catch { return ''; }
   };
 
-  const showQuickReplies = messages.length === 0 && !isLoading && !isStreaming && !initialMessage;
+  const showQuickReplies = messages.length === 0 && !isLoading && !isStreaming && (!initialMessage || didInit.current);
   const hasHistory = messages.length > 0;
 
   return (
@@ -323,7 +322,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
                   <span className="text-gradient">dibantu?</span>
                 </h2>
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5, maxWidth: 280 }}>
-                  Tanya dokumen
+                  Tanya prosedur, syarat, atau checklist berkas dokumen kependudukan.
                 </p>
               </div>
             </div>
@@ -480,7 +479,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
           })}
 
           {/* Typing indicator */}
-          {isLoading && !isStreaming && (
+          {(isLoading || (isStreaming && !streamingText)) && (
             <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 16, gap: 10 }}>
               <div style={{ width: 28, flexShrink: 0, paddingTop: 18, display: 'flex', justifyContent: 'center' }}>
                 <LogoIcon size={22} />

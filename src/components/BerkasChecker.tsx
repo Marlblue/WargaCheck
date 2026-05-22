@@ -318,10 +318,10 @@ export default function BerkasChecker({ onBack }: BerkasCheckerProps) {
                       <BerkasMarkdown content={result} checkedItems={checkedItems} onToggle={toggleCheck} />
                     </div>
                   </div>
-                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)', textAlign: 'center', padding: '20px 0 8px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
-                    Gunakan tombol "Salin Checklist" di atas untuk menyimpan.
-                  </p>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '20px 0 8px', margin: 0, color: 'var(--text-tertiary)', fontSize: 12 }}>
+                    <svg width="14" height="14" style={{ flexShrink: 0, marginTop: 2 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                    <p style={{ margin: 0, lineHeight: 1.5 }}>Gunakan tombol "Salin Checklist" di atas untuk menyimpan.</p>
+                  </div>
                 </>
               )}
             </motion.div>

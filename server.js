@@ -388,7 +388,8 @@ app.post('/api/chat', createRateLimiter('chat'), async (req, res) => {
     if (isRateLimitError(err)) {
       const retryAfter = extractRetryAfter(err);
       let timeStr = `${retryAfter} detik`;
-      if (retryAfter > 3600) timeStr = `${Math.ceil(retryAfter / 3600)} jam`;
+      if (retryAfter > 86400) timeStr = `beberapa waktu ke depan`;
+      else if (retryAfter > 3600) timeStr = `${Math.ceil(retryAfter / 3600)} jam`;
       else if (retryAfter > 60) timeStr = `${Math.ceil(retryAfter / 60)} menit`;
       return res.status(429).json({ error: `Kuota AI habis. Coba lagi dalam ${timeStr}.`, retryAfter });
     }
