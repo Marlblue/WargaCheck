@@ -117,11 +117,13 @@ function csrfProtection(req, res, next) {
   if (process.env.NODE_ENV !== 'production') return next();
   if (req.method === 'GET' || req.method === 'HEAD') return next();
   const origin = req.get('origin') || req.get('referer') || '';
-  const allowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o));
-  if (!allowed) {
-    return res.status(403).json({ error: 'Forbidden: invalid origin.' });
-  }
-  next();
+  // Same-origin requests have no origin header
+  if (!origin) return next();
+  const allowed = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : [];
+  if (allowed.some(o => origin.startsWith(o))) return next();
+  return res.status(403).json({ error: 'Forbidden: invalid origin.' });
 }
 app.use(csrfProtection);
 
