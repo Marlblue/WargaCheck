@@ -401,26 +401,24 @@ app.post('/api/chat/stream', createRateLimiter('chat'), async (req, res) => {
     let aborted = false;
     req.on('close', () => { aborted = true; });
 
-    const timeoutId = setTimeout(() => {
-      if (!aborted) {
-        res.write(`data: ${JSON.stringify({ error: 'AI sedang sibuk. Coba lagi dalam beberapa detik.' })}\n\n`);
-        res.write('data: [DONE]\n\n');
-        res.end();
-      }
-    }, GEMINI_TIMEOUT_MS);
+    let timeoutId = null;
+    const stream = await Promise.race([
+      streamWithFallback({
+        contents: [
+          ...safeHistory,
+          { role: 'user', parts: [{ text: validation.text }] },
+        ],
+        config: {
+          systemInstruction: SYSTEM_PROMPT,
+          temperature: 0.6,
+        },
+      }),
+      new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('TIMEOUT')), GEMINI_TIMEOUT_MS);
+      }),
+    ]);
 
-    const stream = await streamWithFallback({
-      contents: [
-        ...safeHistory,
-        { role: 'user', parts: [{ text: validation.text }] },
-      ],
-      config: {
-        systemInstruction: SYSTEM_PROMPT,
-        temperature: 0.6,
-      },
-    });
-
-    clearTimeout(timeoutId);
+    if (timeoutId) clearTimeout(timeoutId);
 
     for await (const chunk of stream) {
       if (aborted) break;
