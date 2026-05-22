@@ -300,6 +300,7 @@ function extractRetryAfter(err) {
 }
 
 async function callWithFallback(options, timeoutMs = GEMINI_TIMEOUT_MS) {
+  let lastError;
   for (const model of MODELS) {
     const key = getNextKey();
     try {
@@ -311,27 +312,26 @@ async function callWithFallback(options, timeoutMs = GEMINI_TIMEOUT_MS) {
         ),
       ]);
     } catch (err) {
-      if (isRateLimitError(err)) {
-        throw err;
-      }
+      lastError = err;
       if (model === MODELS[MODELS.length - 1]) throw err;
     }
   }
+  throw lastError;
 }
 
 async function streamWithFallback(options) {
+  let lastError;
   for (const model of MODELS) {
     const key = getNextKey();
     try {
       const genai = new GoogleGenAI({ apiKey: key });
       return await genai.models.generateContentStream({ ...options, model });
     } catch (err) {
-      if (isRateLimitError(err)) {
-        throw err;
-      }
+      lastError = err;
       if (model === MODELS[MODELS.length - 1]) throw err;
     }
   }
+  throw lastError;
 }
 
 // ── API Routes ──
