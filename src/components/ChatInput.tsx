@@ -119,4 +119,6 @@ const ChatInput = forwardRef<HTMLTextAreaElement, ChatInputProps>(({
   );
 });
 
+ChatInput.displayName = 'ChatInput';
+
 export default ChatInput;

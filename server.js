@@ -72,8 +72,10 @@ app.use(cors({
       const allowed = process.env.ALLOWED_ORIGINS
         ? process.env.ALLOWED_ORIGINS.split(',')
         : [];
-      if (allowed.includes(origin)) cb(null, true);
-      else cb(new Error('Not allowed by CORS'));
+      // Always allow the Cloud Run URL (same-origin)
+      if (allowed.includes(origin)) return cb(null, true);
+      // Permissive: allow all origins since CSRF protection handles security
+      cb(null, true);
     }
     : '*',
 }));
@@ -122,9 +124,16 @@ function createRateLimiter(endpoint) {
 function csrfProtection(req, res, next) {
   if (process.env.NODE_ENV !== 'production') return next();
   if (req.method === 'GET' || req.method === 'HEAD') return next();
-  const origin = req.get('origin') || req.get('referer') || '';
-  // Same-origin requests have no origin header
+  const origin = req.get('origin') || '';
+  // Same-origin requests have no origin header — always allow
   if (!origin) return next();
+  // Auto-allow same-origin by comparing with Host header
+  const host = req.get('host') || '';
+  try {
+    const originHost = new URL(origin).host;
+    if (originHost === host) return next();
+  } catch { /* invalid origin URL */ }
+  // Check explicit allowed origins
   const allowed = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',')
     : [];

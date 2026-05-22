@@ -134,7 +134,6 @@
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    overflow-x: hidden;
   }
 
   body {
@@ -341,13 +340,13 @@
    NAVBAR
    ══════════════════════════════════════════════ */
 .navbar {
-  position: sticky;
-  top: 12px;
+  position: relative;
+  top: 0;
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 16px;
+  padding: 12px 16px 0;
   pointer-events: none;
 }
 
@@ -1200,15 +1199,37 @@ textarea:focus-visible {
 }
 
 @keyframes pulse-online {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 5px rgba(34, 197, 94, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
 }
 
 @keyframes pulse-offline {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
 
 .text-gradient {
@@ -1243,29 +1264,30 @@ textarea:focus-visible {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: conic-gradient(
-    from 0deg,
-    rgba(230, 57, 70, 0.06) 0deg,
-    rgba(249, 115, 22, 0.06) 120deg,
-    rgba(139, 92, 246, 0.06) 240deg,
-    rgba(230, 57, 70, 0.06) 360deg
-  );
+  background: conic-gradient(from 0deg,
+      rgba(230, 57, 70, 0.06) 0deg,
+      rgba(249, 115, 22, 0.06) 120deg,
+      rgba(139, 92, 246, 0.06) 240deg,
+      rgba(230, 57, 70, 0.06) 360deg);
   animation: heroRotate 12s linear infinite;
 }
 
 [data-theme="dark"] .hero-gradient-bg::before {
-  background: conic-gradient(
-    from 0deg,
-    rgba(248, 113, 113, 0.08) 0deg,
-    rgba(249, 115, 22, 0.08) 120deg,
-    rgba(139, 92, 246, 0.08) 240deg,
-    rgba(248, 113, 113, 0.08) 360deg
-  );
+  background: conic-gradient(from 0deg,
+      rgba(248, 113, 113, 0.08) 0deg,
+      rgba(249, 115, 22, 0.08) 120deg,
+      rgba(139, 92, 246, 0.08) 240deg,
+      rgba(248, 113, 113, 0.08) 360deg);
 }
 
 @keyframes heroRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -1303,9 +1325,11 @@ textarea:focus-visible {
     opacity: 1;
     transform: rotate(0deg) translateX(0);
   }
+
   25% {
     opacity: 1;
   }
+
   100% {
     top: 100%;
     opacity: 0;
@@ -1464,12 +1488,10 @@ textarea:focus-visible {
    SKELETON LOADING
    ══════════════════════════════════════════════ */
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--border-soft) 25%,
-    var(--border) 50%,
-    var(--border-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--border-soft) 25%,
+      var(--border) 50%,
+      var(--border-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: var(--r-sm);
@@ -1513,4 +1535,15 @@ textarea:focus-visible {
 
 .share-btn:active {
   transform: translateY(0) scale(0.97);
+}
+
+/* Fix scroll on mobile */
+.bento-card {
+  touch-action: pan-y;
+  /* ← tambahkan ini */
+}
+
+.bento-grid {
+  touch-action: pan-y;
+  /* ← dan ini */
 }

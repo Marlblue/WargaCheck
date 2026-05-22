@@ -166,8 +166,8 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
             {isScanning && (
               <motion.div key="scanning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ textAlign: 'center', padding: '20px 0' }}>
                 {previewUrl && (
-                  <div style={{ width: '100%', maxHeight: 180, borderRadius: 'var(--r-md)', overflow: 'hidden', marginBottom: 24, border: '1px solid var(--border)' }}>
-                    <img src={previewUrl} alt="Preview" loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
+                  <div style={{ width: '100%', maxHeight: 240, borderRadius: 'var(--r-md)', overflow: 'hidden', marginBottom: 24, border: '1px solid var(--border)', background: 'var(--border-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img src={previewUrl} alt="Preview" loading="lazy" style={{ width: '100%', maxHeight: 240, objectFit: 'contain', display: 'block' }} />
                   </div>
                 )}
                 <div style={{ width: 56, height: 56, margin: '0 auto 20px', borderRadius: '50%', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', animation: 'spin 0.8s linear infinite' }} />
@@ -192,8 +192,8 @@ export default function DocumentScanner({ onClose, onScanComplete }: DocumentSca
             {scanResult && (
               <motion.div key="result" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 {previewUrl && (
-                  <div style={{ width: '100%', height: 120, borderRadius: 'var(--r-md)', overflow: 'hidden', marginBottom: 16, border: '1px solid var(--border)' }}>
-                    <img src={previewUrl} alt="Scanned" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  <div style={{ width: '100%', maxHeight: 200, borderRadius: 'var(--r-md)', overflow: 'hidden', marginBottom: 16, border: '1px solid var(--border)', background: 'var(--border-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img src={previewUrl} alt="Scanned" loading="lazy" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', display: 'block' }} />
                   </div>
                 )}
                 <div style={{ background: 'var(--border-soft)', borderRadius: 'var(--r-md)', padding: 16, marginBottom: 16, fontSize: 14, lineHeight: 1.6, color: 'var(--text-primary)', maxHeight: 300, overflowY: 'auto' }}>

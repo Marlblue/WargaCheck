@@ -18,6 +18,8 @@ export default function LogoIcon({ size = 22, style }: LogoIconProps) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       style={{ flexShrink: 0, ...style }}
+      role="img"
+      aria-label="WargaCheck logo"
     >
       {/* Background rounded square */}
       <rect width="40" height="40" rx="10" fill="var(--primary, #E63946)" />

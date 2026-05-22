@@ -431,13 +431,15 @@ export default function WelcomeContent({ onQuickTopic, onOpenBerkasChecker, onOp
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 12,
+          gap: 8,
           padding: '20px 0',
+          flexDirection: 'column',
+          textAlign: 'center',
         }}>
           <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
             © {new Date().getFullYear()} WargaCheck — <span style={{ color: 'var(--text-secondary)' }}>#JuaraVibeCoding</span>
           </span>
-          <span style={{ fontSize: 12, color: 'var(--text-tertiary)', maxWidth: 380, textAlign: 'right', lineHeight: 1.5 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
             Informasi bersifat umum. Selalu konfirmasi ke instansi resmi setempat.
           </span>
         </div>

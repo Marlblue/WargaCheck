@@ -39,8 +39,10 @@ export function useSpeech(): UseSpeechReturn {
     return () => window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
   }, []);
 
-  const isSupported = typeof window !== 'undefined' && 
-    (!!window.SpeechRecognition || !!window.webkitSpeechRecognition);
+  const [isSupported] = useState(() => 
+    typeof window !== 'undefined' && 
+    (!!window.SpeechRecognition || !!window.webkitSpeechRecognition)
+  );
 
   const clearError = useCallback(() => setError(null), []);
 

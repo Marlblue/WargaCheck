@@ -107,7 +107,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
   }, [messages]);
 
   useEffect(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && (messages.length > 0 || isLoading || streamingText)) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading, streamingText]);
@@ -121,14 +121,16 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
 
     const userMsg: Message = { id: `u-${Date.now()}-${++msgIdCounter.current}`, role: 'user', text, timestamp: new Date().toISOString() };
 
-    setMessages(prev => [...prev, userMsg]);
+    let currentMessages: Message[] = [];
+    setMessages(prev => {
+      currentMessages = [...prev, userMsg];
+      return currentMessages;
+    });
     setInput('');
     setIsLoading(true);
     setIsStreaming(false);
     setStreamingText('');
 
-    const currentMessages = [...messages, userMsg];
-    
     setTimeout(() => {
       if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -194,7 +196,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
       setIsStreaming(false);
       setIsLoading(false);
     }
-  }, [messages, isLoading]);
+  }, [messages, isLoading, isStreaming]);
 
   const generateSuggestions = (response: string, _userQuestion: string): string[] => {
     const lower = response.toLowerCase();
@@ -320,8 +322,8 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
                   Hai, ada yang bisa<br />
                   <span className="text-gradient">dibantu?</span>
                 </h2>
-                <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
-                  Tanya prosedur, syarat, atau checklist berkas dokumen kependudukan apa saja.
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5, maxWidth: 280 }}>
+                  Tanya prosedur, syarat, atau checklist berkas dokumen kependudukan.
                 </p>
               </div>
             </div>
