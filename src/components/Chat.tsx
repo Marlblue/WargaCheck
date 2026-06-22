@@ -121,11 +121,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
 
     const userMsg: Message = { id: `u-${Date.now()}-${++msgIdCounter.current}`, role: 'user', text, timestamp: new Date().toISOString() };
 
-    let currentMessages: Message[] = [];
-    setMessages(prev => {
-      currentMessages = [...prev, userMsg];
-      return currentMessages;
-    });
+    setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
     setIsStreaming(false);
@@ -138,7 +134,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
     }, 10);
 
     try {
-      const history = currentMessages.slice(-20).map(m => ({
+      const history = messages.slice(-20).map(m => ({
         role: m.role,
         parts: [{ text: m.text }]
       }));
