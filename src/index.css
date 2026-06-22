@@ -800,65 +800,29 @@
   margin-bottom: 0;
 }
 
+.md ul,
+.md ol {
+  margin: 8px 0;
+  padding-left: 1.5em;
+}
+
 .md ul {
-  margin: 12px 0;
-  padding: 0;
-  list-style: none;
-}
-
-.md ul li {
-  position: relative;
-  padding: 10px 0;
-  font-size: 14px;
-  line-height: 1.6;
-  border-bottom: 1px solid var(--border-soft);
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.md ul li:last-child {
-  border-bottom: none;
-}
-
-.md ul li::before {
-  content: '•';
-  color: var(--primary);
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 1;
-  margin-top: -2px;
+  list-style: disc;
 }
 
 .md ol {
-  margin: 12px 0;
-  padding: 0;
-  counter-reset: item;
-  list-style: none;
+  list-style: decimal;
 }
 
-.md ol li {
-  counter-increment: item;
-  padding: 10px 0 10px 28px;
-  position: relative;
+.md li {
   font-size: 14px;
-  line-height: 1.6;
-  border-bottom: 1px solid var(--border-soft);
+  line-height: 1.65;
+  padding: 2px 0;
 }
 
-.md ol li:last-child {
-  border-bottom: none;
-}
-
-.md ol li::before {
-  content: counter(item) ".";
-  position: absolute;
-  left: 0;
-  color: var(--primary);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  font-size: 13px;
-  top: 11px;
+.md li > ul,
+.md li > ol {
+  margin: 4px 0;
 }
 
 .md strong {
@@ -921,14 +885,6 @@
   margin-right: 6px;
   width: 14px;
   height: 14px;
-}
-
-.md li:has(input[type="checkbox"]) {
-  padding-left: 0;
-}
-
-.md li:has(input[type="checkbox"])::before {
-  display: none;
 }
 
 /* Berkas result overrides */
