@@ -170,14 +170,11 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
 
       if (!fullText) fullText = 'Maaf, saya sedang mengalami kendala. Bisa diulangi?';
 
-      const suggestions = generateSuggestions(fullText, text);
-
       const botMsg: Message = {
         id: `m-${Date.now()}-${++msgIdCounter.current}`,
         role: 'model',
         text: fullText,
         timestamp: new Date().toISOString(),
-        suggestions,
       };
 
       setMessages(prev => [...prev, botMsg]);
@@ -198,35 +195,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
     }
   }, [messages, isLoading, isStreaming]);
 
-  const generateSuggestions = (response: string, _userQuestion: string): string[] => {
-    const lower = response.toLowerCase();
-    const pool: string[] = [];
-    // Cost-related
-    if (lower.includes('biaya') || lower.includes('gratis')) {
-      pool.push('Berapa lama prosesnya?');
-    } else {
-      pool.push('Berapa biayanya?');
-    }
-    // Time-related
-    if (lower.includes('hari') || lower.includes('minggu')) {
-      pool.push('Bisa dipercepat?');
-    }
-    // Document-related
-    if (lower.includes('dokumen') || lower.includes('berkas')) {
-      pool.push('Buatkan checklist lengkapnya');
-    } else {
-      pool.push('Dokumen apa saja yang perlu disiapkan?');
-    }
-    // Online option
-    if (!lower.includes('online')) {
-      pool.push('Bisa diurus online?');
-    }
-    // Location
-    if (!lower.includes('alamat') && !lower.includes('lokasi')) {
-      pool.push('Di mana kantor terdekat?');
-    }
-    return [...new Set(pool)].slice(0, 3);
-  };
+
 
   const handleSendRef = useRef(handleSend);
   handleSendRef.current = handleSend;
