@@ -77,6 +77,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const didInit = useRef(false);
   const msgIdCounter = useRef(0);
+  const messagesRef = useRef<Message[]>(messages);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -93,6 +94,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
   }, []);
 
   useEffect(() => {
+    messagesRef.current = messages;
     if (messages.length > 0) {
       try {
         const toSave = { v: STORAGE_VERSION, ts: Date.now(), data: messages.slice(-100) };
@@ -134,7 +136,11 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
     }, 10);
 
     try {
-      const history = messages.slice(-20).map(m => ({
+      // Use messagesRef.current to always get the latest messages,
+      // avoiding stale closure issues with useCallback.
+      // Include ALL prior messages (before this new userMsg) as history.
+      const currentMessages = messagesRef.current;
+      const history = currentMessages.slice(-20).map(m => ({
         role: m.role,
         parts: [{ text: m.text }]
       }));
@@ -189,7 +195,7 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
       setIsStreaming(false);
       setIsLoading(false);
     }
-  }, [messages, isLoading, isStreaming]);
+  }, [isLoading, isStreaming]);
 
 
 
