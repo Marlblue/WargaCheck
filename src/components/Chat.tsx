@@ -123,6 +123,14 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
 
     const userMsg: Message = { id: `u-${Date.now()}-${++msgIdCounter.current}`, role: 'user', text, timestamp: new Date().toISOString() };
 
+    // Capture history BEFORE adding userMsg to state to avoid race conditions.
+    // messagesRef.current is guaranteed to not yet contain userMsg at this point,
+    // since we haven't called setMessages yet.
+    const historySnapshot = messagesRef.current.slice(-20).map(m => ({
+      role: m.role as 'user' | 'model',
+      parts: [{ text: m.text }]
+    }));
+
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
@@ -136,14 +144,9 @@ export default function Chat({ initialMessage, onBack, onOpenScanner }: ChatProp
     }, 10);
 
     try {
-      // Use messagesRef.current to always get the latest messages,
-      // avoiding stale closure issues with useCallback.
-      // Include ALL prior messages (before this new userMsg) as history.
-      const currentMessages = messagesRef.current;
-      const history = currentMessages.slice(-20).map(m => ({
-        role: m.role,
-        parts: [{ text: m.text }]
-      }));
+      // Use the pre-captured historySnapshot so the new userMsg
+      // is only sent as the `message` param, never duplicated in history.
+      const history = historySnapshot;
 
       // Try real SSE streaming first
       let fullText = '';
